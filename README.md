@@ -127,14 +127,6 @@ Quick-start with professional shot configurations:
 | Low Angle | 0° (-20° height) | 35mm | Heroic shot |
 | High Angle | 0° (+20° height) | 35mm | Overview shot |
 
-## 🏆 Why This Wins
-
-| Judging Criteria | How We Excel |
-|------------------|--------------|
-| **Usage of FIBO** | Leverages JSON-native prompts, camera params, lighting, color palette - impossible without FIBO's disentanglement |
-| **Potential Impact** | Solves real problems for game studios, e-commerce, film production |
-| **Innovation** | First tool to offer multi-shot consistency with automated validation |
-
 ## 📄 License
 
 MIT License - Built for FIBO Hackathon 2025
