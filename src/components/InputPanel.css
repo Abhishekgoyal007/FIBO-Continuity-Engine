@@ -1,5 +1,459 @@
-.panel-input .panel-content {
+/* InputPanel Premium Styles */
+
+.panel-input {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+}
+
+/* Prompt Group with Enhance Button */
+.prompt-group {
+    position: relative;
+}
+
+.prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+}
+
+.prompt-header label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
+
+.btn-enhance {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+}
+
+.btn-enhance:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+.btn-enhance:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Prompt Textarea - Enhanced */
+.prompt-group textarea {
+    background: linear-gradient(135deg, rgba(20, 20, 30, 0.8) 0%, rgba(30, 30, 45, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    resize: none;
+}
+
+.prompt-group textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15),
+        0 8px 25px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.prompt-group textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* Prompt Suggestions */
+.prompt-suggestions {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.suggestion-icon {
+    flex-shrink: 0;
+}
+
+/* Visual Style Section Title */
+.input-group>label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+}
+
+/* Visual Style Grid - Premium Cards */
+.visual-style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.visual-preset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.visual-preset-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.visual-preset-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.visual-preset-card:hover::before {
+    opacity: 0.05;
+}
+
+.visual-preset-card.active {
+    border-color: var(--accent-primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2),
+        inset 0 0 20px rgba(99, 102, 241, 0.05);
+}
+
+.visual-preset-card.active::before {
+    opacity: 0.1;
+}
+
+.preset-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.preset-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.preset-preview .preset-gradient {
+    width: 100%;
+    height: 100%;
+}
+
+.visual-preset-card:hover .preset-preview {
+    transform: scale(1.02);
+}
+
+.preset-selected {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
+    animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 10;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.preset-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.visual-preset-card.active .preset-label,
+.visual-preset-card:hover .preset-label {
+    color: var(--text-primary);
+}
+
+/* Accordion Styling */
+.accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.accordion-item {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.accordion-item:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.accordion-item.open {
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accordion-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.accordion-header span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.accordion-header svg {
+    color: var(--accent-primary);
+}
+
+.accordion-arrow {
+    transition: transform 0.3s ease;
+    color: var(--text-muted) !important;
+}
+
+.accordion-item.open .accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s ease;
+    padding: 0 16px;
+}
+
+.accordion-item.open .accordion-content {
+    max-height: 400px;
+    padding: 0 16px 16px;
+}
+
+/* Lighting Grid - Premium */
+.visual-lighting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.lighting-preset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lighting-preset-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.lighting-preset-card.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.lighting-preview {
+    width: 100%;
+    height: 50px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.lighting-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.lighting-preview .preset-gradient {
+    width: 100%;
+    height: 100%;
+}
+
+.lighting-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.lighting-preset-card.active .lighting-label,
+.lighting-preset-card:hover .lighting-label {
+    color: var(--text-primary);
+}
+
+/* Color Palette Grid */
+.visual-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.palette-preset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.palette-preset-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.palette-preset-card.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.palette-preview-large {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.palette-preview-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.palette-preview-large .preset-gradient {
+    width: 100%;
+    height: 100%;
+}
+
+.palette-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.palette-preset-card.active .palette-label,
+.palette-preset-card:hover .palette-label {
+    color: var(--text-primary);
+}
+
+/* Spin animation */
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty State for Preset Without Image */
+.preset-preview:empty,
+.lighting-preview:empty,
+.palette-preview-large:empty {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
 }

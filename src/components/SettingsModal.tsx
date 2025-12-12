@@ -5,19 +5,20 @@ import './SettingsModal.css';
 
 const API_PROVIDERS = [
     {
-        id: 'demo',
-        name: 'Demo Mode',
-        description: 'Test with placeholder images (no API key needed)',
-        icon: Sparkles,
-        free: true
-    },
-    {
         id: 'bria',
         name: 'BRIA Platform',
-        description: '1000 free API calls per month',
+        description: '1000 free API calls per month (Recommended)',
         icon: Zap,
         free: true,
-        link: 'https://platform.bria.ai/'
+        recommended: true,
+        link: 'https://platform.bria.ai/console/account/api-keys'
+    },
+    {
+        id: 'demo',
+        name: 'Demo Mode',
+        description: 'Test UI with placeholder images (no API key needed)',
+        icon: Sparkles,
+        free: true
     },
     {
         id: 'fal',

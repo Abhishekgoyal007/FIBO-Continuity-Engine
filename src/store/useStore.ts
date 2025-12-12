@@ -169,7 +169,7 @@ export const useStore = create<AppState>()(
       currentProject: null,
       projects: [],
       settings: {
-        apiProvider: 'demo',
+        apiProvider: 'bria',
         apiKey: '',
         imageSize: '1024x1024',
         qualitySteps: 50,
