@@ -1,0 +1,38 @@
+.decrypted-text {
+    display: inline-block;
+    font-family: var(--font-mono);
+}
+
+.decrypted-text .char {
+    display: inline-block;
+    transition: color 0.1s ease;
+}
+
+.decrypted-text .char.scrambled {
+    color: var(--accent);
+    opacity: 0.7;
+}
+
+.decrypted-text .char.revealed {
+    color: inherit;
+}
+
+.decrypted-text.revealing .char {
+    animation: glitch 0.1s ease;
+}
+
+@keyframes glitch {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
+}

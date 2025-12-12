@@ -10,7 +10,11 @@ import {
     Image as ImageIcon,
     Eye,
     RefreshCw,
-    X
+    X,
+    User,
+    Box,
+    Clapperboard,
+    Smile
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import type { Shot } from '../store/useStore';
@@ -18,10 +22,10 @@ import { initFiboAPI, buildBasePrompt } from '../api/fibo';
 import './ShotPlanner.css';
 
 const SHOT_TEMPLATES = [
-    { id: 'character-turnaround', icon: '👤', name: 'Character Turnaround', count: '5 shots' },
-    { id: 'product-360', icon: '📦', name: 'Product 360°', count: '8 shots' },
-    { id: 'storyboard', icon: '🎬', name: 'Storyboard Sequence', count: '6 shots' },
-    { id: 'expression-sheet', icon: '😊', name: 'Expression Sheet', count: '9 shots' },
+    { id: 'character-turnaround', icon: User, name: 'Character Turnaround', count: '5 shots' },
+    { id: 'product-360', icon: Box, name: 'Product 360°', count: '8 shots' },
+    { id: 'storyboard', icon: Clapperboard, name: 'Storyboard Sequence', count: '6 shots' },
+    { id: 'expression-sheet', icon: Smile, name: 'Expression Sheet', count: '9 shots' },
 ];
 
 export function ShotPlanner() {
@@ -316,17 +320,22 @@ export function ShotPlanner() {
                 <div className="panel-content">
                     {/* Shot Templates */}
                     <div className="shot-templates">
-                        {SHOT_TEMPLATES.map((template) => (
-                            <button
-                                key={template.id}
-                                className="template-btn"
-                                onClick={() => handleAddTemplate(template.id)}
-                            >
-                                <span className="template-icon">{template.icon}</span>
-                                <span className="template-name">{template.name}</span>
-                                <span className="template-count">{template.count}</span>
-                            </button>
-                        ))}
+                        {SHOT_TEMPLATES.map((template) => {
+                            const IconComponent = template.icon;
+                            return (
+                                <button
+                                    key={template.id}
+                                    className="template-btn"
+                                    onClick={() => handleAddTemplate(template.id)}
+                                >
+                                    <span className="template-icon">
+                                        <IconComponent size={20} />
+                                    </span>
+                                    <span className="template-name">{template.name}</span>
+                                    <span className="template-count">{template.count}</span>
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Shot List */}
@@ -463,18 +472,21 @@ export function ShotPlanner() {
                                                 <>
                                                     <p>✨ Great! Now add shots to generate from this reference.</p>
                                                     <div className="quick-templates">
-                                                        {SHOT_TEMPLATES.slice(0, 2).map(t => (
-                                                            <button
-                                                                key={t.id}
-                                                                className="btn btn-sm btn-ghost"
-                                                                onClick={() => {
-                                                                    addShotsFromTemplate(t.id);
-                                                                    addToast('success', `Added ${t.count}`);
-                                                                }}
-                                                            >
-                                                                {t.icon} {t.name}
-                                                            </button>
-                                                        ))}
+                                                        {SHOT_TEMPLATES.slice(0, 2).map(t => {
+                                                            const IconComp = t.icon;
+                                                            return (
+                                                                <button
+                                                                    key={t.id}
+                                                                    className="btn btn-sm btn-ghost"
+                                                                    onClick={() => {
+                                                                        addShotsFromTemplate(t.id);
+                                                                        addToast('success', `Added ${t.count}`);
+                                                                    }}
+                                                                >
+                                                                    <IconComp size={14} /> {t.name}
+                                                                </button>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </>
                                             ) : (

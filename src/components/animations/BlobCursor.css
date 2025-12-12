@@ -1,0 +1,16 @@
+.blob-cursor {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: screen;
+    opacity: 0.6;
+    transition: width 0.2s, height 0.2s;
+}
+
+/* Hide on mobile */
+@media (max-width: 768px) {
+    .blob-cursor {
+        display: none;
+    }
+}

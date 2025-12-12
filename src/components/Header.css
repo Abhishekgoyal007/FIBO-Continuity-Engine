@@ -1,73 +1,141 @@
+/* Header - Minimal Futuristic */
+
 .app-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-md) var(--space-lg);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    height: 56px;
+    padding: 0 var(--sp-5);
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border);
 }
 
-.logo-section {
+.header-left,
+.header-right {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-}
-
-.logo-icon {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-}
-
-.logo-icon svg {
-    width: 100%;
-    height: 100%;
-}
-
-.logo-text h1 {
-    font-size: 1.125rem;
-    font-weight: 700;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 2px;
-}
-
-.tagline {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    gap: var(--sp-4);
+    flex: 1;
 }
 
 .header-center {
-    flex: 1;
+    flex: 0 0 auto;
+}
+
+.header-right {
+    justify-content: flex-end;
+}
+
+/* Logo */
+.logo {
     display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
 }
 
-.project-name {
+.logo-inner {
+    width: 14px;
+    height: 14px;
+    background: var(--bg-void);
+    border-radius: 2px;
+}
+
+.logo-text {
     display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-md);
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-full);
+    flex-direction: column;
+    gap: 0;
+}
+
+.logo-title {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
-.project-name svg {
-    color: var(--accent-primary);
+.logo-tagline {
+    font-size: 0.625rem;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
 }
 
-.header-actions {
+/* Project Button */
+.project-btn {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+
+.project-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.project-btn svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-tertiary);
+}
+
+/* Header Buttons */
+.header-btn {
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+}
+
+.header-btn:hover {
+    color: var(--text-primary);
+}
+
+.header-new-btn {
+    background: var(--text-primary);
+    color: var(--bg-void);
+    border: none;
+    padding: var(--sp-2) var(--sp-4);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.header-new-btn:hover {
+    background: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-header {
+        height: 48px;
+        padding: 0 var(--sp-4);
+    }
+
+    .logo-text {
+        display: none;
+    }
+
+    .project-btn span {
+        display: none;
+    }
+
+    .header-new-btn span {
+        display: none;
+    }
 }

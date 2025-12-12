@@ -1,0 +1,26 @@
+.spotlight-card {
+    position: relative;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.spotlight-gradient {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.spotlight-content {
+    position: relative;
+    z-index: 2;
+    padding: var(--sp-8);
+}
+
+.spotlight-card:hover {
+    border-color: var(--border-hover);
+}

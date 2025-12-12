@@ -1,27 +1,14 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Settings,
-  Plus,
-  Play,
-  Download,
-  Image as ImageIcon,
-  Camera,
-  Palette,
-  Sun,
-  Layers,
-  X,
-  Check,
-  AlertCircle,
-  Info
-} from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { useStore } from './store/useStore';
+import { LandingPage } from './components/LandingPage';
 import { Header } from './components/Header';
 import { InputPanel } from './components/InputPanel';
 import { ShotPlanner } from './components/ShotPlanner';
 import { OutputGallery } from './components/OutputGallery';
 import { SettingsModal } from './components/SettingsModal';
 import { ShotEditorModal } from './components/ShotEditorModal';
+import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { Toast } from './components/Toast';
 import './App.css';
 
@@ -31,9 +18,20 @@ function App() {
     showSettings,
     showShotEditor,
     toasts,
-    createProject,
-    setShowSettings
+    createProject
   } = useStore();
+
+  // View state: 'landing' or 'app'
+  const [view, setView] = useState<'landing' | 'app'>('landing');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if first visit
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('fibo_visited');
+    if (!hasVisited) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   // Create a default project if none exists
   useEffect(() => {
@@ -42,6 +40,26 @@ function App() {
     }
   }, [currentProject, createProject]);
 
+  const handleEnterApp = () => {
+    setView('app');
+    // Show onboarding on first visit
+    const hasVisited = localStorage.getItem('fibo_visited');
+    if (!hasVisited) {
+      setShowOnboarding(true);
+      localStorage.setItem('fibo_visited', 'true');
+    }
+  };
+
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false);
+  };
+
+  // Show landing page
+  if (view === 'landing') {
+    return <LandingPage onEnterApp={handleEnterApp} />;
+  }
+
+  // Show main app
   return (
     <div className="app">
       {/* Animated Background */}
@@ -73,6 +91,11 @@ function App() {
       {/* Shot Editor Modal */}
       <AnimatePresence>
         {showShotEditor && <ShotEditorModal />}
+      </AnimatePresence>
+
+      {/* Onboarding Tutorial */}
+      <AnimatePresence>
+        {showOnboarding && <OnboardingTutorial onClose={handleCloseOnboarding} />}
       </AnimatePresence>
 
       {/* Toast Notifications */}

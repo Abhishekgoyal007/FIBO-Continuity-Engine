@@ -1,0 +1,141 @@
+.scroll-stack-scroller {
+    position: relative;
+    width: 100%;
+}
+
+.scroll-stack-inner {
+    padding: 60px 2rem 200px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.scroll-stack-card {
+    position: sticky;
+    top: 100px;
+    min-height: 260px;
+    width: 100%;
+    padding: 2.5rem 3rem;
+    margin-bottom: 40px;
+    border-radius: 28px;
+    box-sizing: border-box;
+    background: rgba(18, 18, 18, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Stacking offset - each card sticks a bit lower */
+.scroll-stack-card:nth-child(1) {
+    top: 100px;
+    z-index: 1;
+}
+
+.scroll-stack-card:nth-child(2) {
+    top: 125px;
+    z-index: 2;
+}
+
+.scroll-stack-card:nth-child(3) {
+    top: 150px;
+    z-index: 3;
+}
+
+.scroll-stack-card:nth-child(4) {
+    top: 175px;
+    z-index: 4;
+}
+
+.scroll-stack-card:nth-child(5) {
+    top: 200px;
+    z-index: 5;
+}
+
+.scroll-stack-card:nth-child(6) {
+    top: 225px;
+    z-index: 6;
+}
+
+.scroll-stack-card h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.scroll-stack-card p {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-width: 600px;
+}
+
+/* Feature Card Styles */
+.stack-card-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-dim);
+    border-radius: 14px;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+}
+
+.stack-card-number {
+    position: absolute;
+    top: 2.5rem;
+    right: 3rem;
+    font-family: var(--font-mono);
+    font-size: 4rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.04);
+    line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .scroll-stack-inner {
+        padding: 40px 1rem 150px;
+    }
+
+    .scroll-stack-card {
+        padding: 2rem;
+        min-height: 200px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }
+
+    .scroll-stack-card:nth-child(1) {
+        top: 80px;
+    }
+
+    .scroll-stack-card:nth-child(2) {
+        top: 100px;
+    }
+
+    .scroll-stack-card:nth-child(3) {
+        top: 120px;
+    }
+
+    .scroll-stack-card:nth-child(4) {
+        top: 140px;
+    }
+
+    .scroll-stack-card:nth-child(5) {
+        top: 160px;
+    }
+
+    .scroll-stack-card:nth-child(6) {
+        top: 180px;
+    }
+
+    .scroll-stack-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .stack-card-number {
+        font-size: 3rem;
+        top: 1.5rem;
+        right: 2rem;
+    }
+}

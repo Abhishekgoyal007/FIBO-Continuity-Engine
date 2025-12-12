@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Image as ImageIcon,
@@ -10,7 +10,10 @@ import {
     CheckCircle,
     AlertTriangle,
     Info,
-    RefreshCw
+    RefreshCw,
+    Play,
+    Pause,
+    Film
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import JSZip from 'jszip';
@@ -20,8 +23,12 @@ import './OutputGallery.css';
 export function OutputGallery() {
     const { currentProject, consistencyScore, addToast, setConsistencyScore } = useStore();
     const [isExporting, setIsExporting] = useState(false);
+    const [isExportingGif, setIsExportingGif] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [animationIndex, setAnimationIndex] = useState(0);
+    const animationRef = useRef<NodeJS.Timeout | null>(null);
 
     if (!currentProject) return null;
 
@@ -116,6 +123,71 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
         }
     };
 
+    // GIF Export using gifshot
+    const handleExportGif = async () => {
+        if (completedShots.length < 2) {
+            addToast('error', 'Need at least 2 images for GIF');
+            return;
+        }
+
+        setIsExportingGif(true);
+        try {
+            const gifshot = await import('gifshot');
+            const imageUrls = completedShots.map(s => s.imageUrl!);
+
+            gifshot.createGIF({
+                images: imageUrls,
+                gifWidth: 512,
+                gifHeight: 512,
+                interval: 0.5,
+                numFrames: imageUrls.length,
+                frameDuration: 1,
+                sampleInterval: 10,
+            }, (obj: { error: boolean; image: string; errorMsg?: string }) => {
+                if (!obj.error) {
+                    const link = document.createElement('a');
+                    link.download = `${currentProject.name.replace(/[^a-z0-9]/gi, '_')}_sequence.gif`;
+                    link.href = obj.image;
+                    link.click();
+                    addToast('success', 'GIF exported successfully!');
+                } else {
+                    console.error('GIF creation failed:', obj.errorMsg);
+                    addToast('error', 'GIF export failed');
+                }
+                setIsExportingGif(false);
+            });
+        } catch (error) {
+            console.error('GIF export error:', error);
+            addToast('error', 'GIF export failed');
+            setIsExportingGif(false);
+        }
+    };
+
+    // Animation Preview Toggle
+    const toggleAnimation = () => {
+        if (isAnimating) {
+            if (animationRef.current) {
+                clearInterval(animationRef.current);
+                animationRef.current = null;
+            }
+            setIsAnimating(false);
+        } else {
+            setIsAnimating(true);
+            animationRef.current = setInterval(() => {
+                setAnimationIndex(prev => (prev + 1) % completedShots.length);
+            }, 500);
+        }
+    };
+
+    // Cleanup animation on unmount
+    useEffect(() => {
+        return () => {
+            if (animationRef.current) {
+                clearInterval(animationRef.current);
+            }
+        };
+    }, []);
+
     const getScoreColor = (score: number): string => {
         if (score >= 80) return 'var(--success)';
         if (score >= 60) return 'var(--accent-primary)';
@@ -138,14 +210,37 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                     Generated Sequence
                 </h2>
                 <div className="panel-actions">
-                    {completedShots.length >= 2 && !isAnalyzing && (
-                        <button
-                            className="btn btn-sm btn-ghost"
-                            onClick={analyzeConsistency}
-                            title="Re-analyze Consistency"
-                        >
-                            <RefreshCw size={16} />
-                        </button>
+                    {completedShots.length >= 2 && (
+                        <>
+                            <button
+                                className={`btn btn-sm ${isAnimating ? 'btn-primary' : 'btn-ghost'}`}
+                                onClick={toggleAnimation}
+                                title={isAnimating ? 'Stop Animation' : 'Play Animation'}
+                            >
+                                {isAnimating ? <Pause size={16} /> : <Play size={16} />}
+                            </button>
+                            <button
+                                className="btn btn-sm btn-ghost"
+                                onClick={handleExportGif}
+                                disabled={isExportingGif}
+                                title="Export as GIF"
+                            >
+                                {isExportingGif ? (
+                                    <Loader2 size={16} className="spin" />
+                                ) : (
+                                    <Film size={16} />
+                                )}
+                            </button>
+                            {!isAnalyzing && (
+                                <button
+                                    className="btn btn-sm btn-ghost"
+                                    onClick={analyzeConsistency}
+                                    title="Re-analyze Consistency"
+                                >
+                                    <RefreshCw size={16} />
+                                </button>
+                            )}
+                        </>
                     )}
                     <button
                         className="btn btn-sm btn-ghost"
@@ -251,6 +346,26 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                             <div className="analyzing-state">
                                 <Loader2 size={24} className="spin" />
                                 <span>Analyzing consistency...</span>
+                            </div>
+                        )}
+
+                        {/* Animation Preview */}
+                        {isAnimating && completedShots.length > 0 && (
+                            <div className="animation-preview">
+                                <div className="animation-frame">
+                                    <img
+                                        src={completedShots[animationIndex]?.imageUrl}
+                                        alt={completedShots[animationIndex]?.name}
+                                    />
+                                </div>
+                                <div className="animation-info">
+                                    <span className="animation-label">
+                                        {completedShots[animationIndex]?.name}
+                                    </span>
+                                    <span className="animation-progress">
+                                        {animationIndex + 1} / {completedShots.length}
+                                    </span>
+                                </div>
                             </div>
                         )}
 

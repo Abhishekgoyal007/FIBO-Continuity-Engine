@@ -1,0 +1,9 @@
+.blur-text {
+    display: inline-flex;
+    flex-wrap: wrap;
+}
+
+.blur-word {
+    display: inline-block;
+    margin-right: 0.25em;
+}
