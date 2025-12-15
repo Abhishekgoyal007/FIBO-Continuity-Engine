@@ -626,13 +626,34 @@ export class FiboAPI {
                             console.log('[FIBO] structured_prompt is not JSON, using as refinement');
                         }
 
-                        // Generate with modified structured prompt - minimal text prompt
+                        // Generate with modified structured prompt - STRONG camera instruction
                         const cameraInstruction = buildCameraInstruction(shot);
+
+                        // Build a stronger prompt that explicitly emphasizes the camera angle
+                        // especially for back views which AI tends to ignore
+                        let shotPrompt = cameraInstruction;
+
+                        // Add VERY STRONG emphasis for back view angles (135-225 degrees)
+                        const normalizedAngle = ((shot.cameraAngle % 360) + 360) % 360;
+                        if (normalizedAngle >= 135 && normalizedAngle <= 225) {
+                            shotPrompt = `CRITICAL: BACK VIEW ONLY. Show the BACK of the character, NOT the front. Subject facing AWAY from camera. ${cameraInstruction}. The camera is BEHIND the subject. Do NOT show the face. Show only the back of the head and body.`;
+                        } else if (normalizedAngle >= 60 && normalizedAngle <= 120) {
+                            shotPrompt = `SIDE PROFILE VIEW. ${cameraInstruction}. Subject facing sideways, not toward camera.`;
+                        } else if (normalizedAngle >= 240 && normalizedAngle <= 300) {
+                            shotPrompt = `SIDE PROFILE VIEW from right. ${cameraInstruction}. Subject facing sideways, not toward camera.`;
+                        }
+
+                        // Add angle-specific negative prompts for stronger effect
+                        let angleNegativePrompt = negativePrompt;
+                        if (normalizedAngle >= 135 && normalizedAngle <= 225) {
+                            angleNegativePrompt = `front view, face visible, eyes visible, looking at camera, facing camera, frontal view, ${negativePrompt}`;
+                        }
+
                         result = await this.generate(
-                            `${cameraInstruction}. Keep exactly the same character identity.`,
+                            `${shotPrompt}. Keep exactly the same character identity, clothing, and style.`,
                             seed,
                             modifiedStructuredPrompt,
-                            negativePrompt
+                            angleNegativePrompt
                         );
                     } else {
                         // Fallback: use full prompt with consistency modifiers
