@@ -128,40 +128,6 @@ npm run dev
 
 ---
 
-## 🏆 Hackathon Category
-
-### **Best New User Experience or Professional Tool** 🎯
-
-This project demonstrates:
-- ✅ **Practical production application** for real creative workflows
-- ✅ **Pro-grade controls** (camera angle, FOV, lighting, color palette)
-- ✅ **Disentanglement** to change view without affecting identity
-- ✅ **Professional UI/UX** designed for studio pipelines
-
-### FIBO Features Showcased:
-1. **Structured Prompts** - JSON-native generation control
-2. **Camera Parameters** - Precise angle control
-3. **Seed Locking** - Deterministic generation
-4. **Iterative Refinement** - Modify single parameters while keeping others fixed
-
----
-
-## 📸 Screenshots
-
-### Landing Page
-Premium design with animated hero section showcasing real FIBO-generated images.
-
-### Main Application
-Three-panel workflow:
-- **Left**: Subject description + style settings
-- **Center**: Shot planner with templates
-- **Right**: Generated gallery with export
-
-### Consistency Analysis
-Real-time scoring with color histogram comparison.
-
----
-
 ## 🔮 Future Roadmap
 
 - [ ] Reference image upload for image-to-image generation
