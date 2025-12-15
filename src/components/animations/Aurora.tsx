@@ -117,13 +117,14 @@ void main() {
 `;
 
 export function Aurora({
-    colorStops = ['#60ed56ff', '#a967e8ff', '#3b82f6'],
+    colorStops = ['#60ed56', '#a967e8', '#3b82f6'],
     amplitude = 1.0,
     blend = 0.5,
-    speed = 1.0
+    speed = 1.0,
+    time
 }: AuroraProps) {
-    const propsRef = useRef({ colorStops, amplitude, blend, speed });
-    propsRef.current = { colorStops, amplitude, blend, speed };
+    const propsRef = useRef({ colorStops, amplitude, blend, speed, time });
+    propsRef.current = { colorStops, amplitude, blend, speed, time };
 
     const ctnDom = useRef<HTMLDivElement>(null);
 
@@ -183,8 +184,8 @@ export function Aurora({
         let animateId = 0;
         const update = (t: number) => {
             animateId = requestAnimationFrame(update);
-            const { speed: currentSpeed = 1.0 } = propsRef.current;
-            program.uniforms.uTime.value = t * 0.01 * currentSpeed * 0.1;
+            const { time: customTime, speed: currentSpeed = 1.0 } = propsRef.current;
+            program.uniforms.uTime.value = (customTime ?? t * 0.01) * currentSpeed * 0.1;
             program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
             program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
             const stops = propsRef.current.colorStops ?? colorStops;

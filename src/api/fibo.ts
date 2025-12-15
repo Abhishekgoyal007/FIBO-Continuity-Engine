@@ -41,98 +41,148 @@ const DEMO_IMAGES = [
 ];
 
 // ============================================
-// Camera Angle to Instructions Mapping
+// ENHANCED Camera Angle to Instructions Mapping
+// More precise and detailed descriptions for better AI understanding
 // ============================================
 
 const getCameraAngleInstruction = (angle: number): string => {
     const normalizedAngle = ((angle % 360) + 360) % 360;
 
-    if (normalizedAngle <= 15 || normalizedAngle >= 345) return 'front view, facing the camera directly';
-    if (normalizedAngle >= 15 && normalizedAngle < 60) return 'three-quarter view from the left side';
-    if (normalizedAngle >= 60 && normalizedAngle < 120) return 'side profile view from the left';
-    if (normalizedAngle >= 120 && normalizedAngle < 165) return 'three-quarter back view from the left';
-    if (normalizedAngle >= 165 && normalizedAngle < 195) return 'back view, facing away from camera';
-    if (normalizedAngle >= 195 && normalizedAngle < 240) return 'three-quarter back view from the right';
-    if (normalizedAngle >= 240 && normalizedAngle < 300) return 'side profile view from the right';
-    if (normalizedAngle >= 300 && normalizedAngle < 345) return 'three-quarter view from the right side';
+    // Very precise angle descriptions for FIBO consistency
+    if (normalizedAngle === 0) return 'straight front view, camera directly in front, subject facing camera';
+    if (normalizedAngle <= 15 || normalizedAngle >= 345) return 'front view, facing the camera directly, slight angle';
+    if (normalizedAngle >= 15 && normalizedAngle < 45) return 'front three-quarter view, 30 degrees from front left';
+    if (normalizedAngle >= 45 && normalizedAngle < 60) return 'three-quarter view from left, 45 degree angle';
+    if (normalizedAngle >= 60 && normalizedAngle < 90) return 'strong three-quarter left view, approaching side profile';
+    if (normalizedAngle >= 90 && normalizedAngle < 120) return 'left side profile view, 90 degrees, exact side angle';
+    if (normalizedAngle >= 120 && normalizedAngle < 150) return 'rear three-quarter view from left, 135 degrees';
+    if (normalizedAngle >= 150 && normalizedAngle < 180) return 'approaching back view from left, 160 degrees';
+    if (normalizedAngle >= 180 && normalizedAngle < 195) return 'back view, camera behind subject, 180 degrees';
+    if (normalizedAngle >= 195 && normalizedAngle < 225) return 'approaching back view from right, 200 degrees';
+    if (normalizedAngle >= 225 && normalizedAngle < 270) return 'rear three-quarter view from right, 225 degrees';
+    if (normalizedAngle >= 270 && normalizedAngle < 300) return 'right side profile view, 270 degrees, exact side angle';
+    if (normalizedAngle >= 300 && normalizedAngle < 330) return 'three-quarter view from right, 315 degrees';
+    if (normalizedAngle >= 330 && normalizedAngle < 345) return 'front three-quarter view from right, 340 degrees';
 
-    return 'front view';
+    return 'front view, facing camera';
 };
 
 const getCameraHeightInstruction = (height: number): string => {
-    if (height <= -15) return 'low angle shot looking up';
-    if (height <= -5) return 'slightly low angle';
-    if (height >= 15) return 'high angle shot looking down';
-    if (height >= 5) return 'slightly high angle';
-    return 'eye level';
+    if (height <= -30) return 'extreme low angle, dramatic upward view, worm\'s eye perspective';
+    if (height <= -15) return 'low angle shot, looking up at subject, powerful perspective';
+    if (height <= -5) return 'slightly low angle, subtle upward tilt';
+    if (height >= 30) return 'extreme high angle, bird\'s eye view, looking down dramatically';
+    if (height >= 15) return 'high angle shot, looking down at subject';
+    if (height >= 5) return 'slightly elevated camera, subtle downward tilt';
+    return 'eye level camera, straight on perspective';
 };
 
 const getFovInstruction = (fov: number): string => {
-    if (fov <= 24) return '24mm lens';
-    if (fov <= 35) return '35mm lens';
-    if (fov <= 50) return '50mm lens';
-    if (fov <= 85) return '85mm lens';
-    return '135mm lens';
+    if (fov <= 20) return 'telephoto 135mm lens, compressed perspective, shallow depth of field';
+    if (fov <= 35) return '85mm portrait lens, flattering perspective, beautiful bokeh';
+    if (fov <= 50) return '50mm standard lens, natural perspective like human eye';
+    if (fov <= 70) return '35mm lens, slight wide angle, environmental context';
+    if (fov <= 90) return '24mm wide angle lens, expansive view, environmental portrait';
+    return '16mm ultra-wide lens, dramatic distortion, immersive perspective';
 };
 
 const getFramingInstruction = (framing: Shot['framing']): string => {
     switch (framing) {
-        case 'full': return 'full shot showing entire subject';
-        case 'cowboy': return 'medium-full shot';
-        case 'medium': return 'medium shot';
-        case 'closeup': return 'close-up shot';
-        case 'extreme-closeup': return 'extreme close-up';
-        default: return 'medium shot';
+        case 'full': return 'full body shot, head to toe visible, complete figure in frame';
+        case 'cowboy': return 'cowboy shot, mid-thigh to head, classic western framing';
+        case 'medium': return 'medium shot, waist up framing, conversational distance';
+        case 'closeup': return 'close-up shot, face and shoulders, intimate detail';
+        case 'extreme-closeup': return 'extreme close-up, tight on face, dramatic detail shot';
+        default: return 'medium shot, balanced framing';
     }
 };
 
 // ============================================
-// Style to Prompt Enhancements
+// ENHANCED Style Prompt Additions
+// More comprehensive style descriptions for better results
 // ============================================
 
 const getStyleEnhancement = (style: StyleSettings['style']): string => {
     switch (style) {
         case 'photorealistic':
-            return 'photorealistic, professional photography, 8K, sharp focus';
+            return 'photorealistic, ultra-realistic photography, 8K UHD resolution, RAW photo, DSLR quality, sharp focus, high dynamic range, professional color grading, fine skin detail, natural imperfections';
         case 'cinematic':
-            return 'cinematic, film still, dramatic lighting';
+            return 'cinematic film still, anamorphic lens, 35mm film grain, dramatic chiaroscuro lighting, color graded like a Hollywood movie, shallow depth of field, lens flares, atmospheric haze';
         case 'anime':
-            return 'anime style, vibrant colors, clean lines';
+            return 'anime art style, Studio Ghibli quality, vibrant saturated colors, clean crisp linework, cel shading, expressive eyes, detailed hair strands, beautiful color harmony';
         case 'concept':
-            return 'concept art, digital painting';
+            return 'professional concept art, digital painting, artstation trending, matte painting quality, detailed environment, atmospheric perspective, dynamic composition';
         case '3d':
-            return '3D render, octane render, highly detailed';
+            return '3D render, Octane render quality, Cinema 4D, volumetric lighting, subsurface scattering, ray traced reflections, ambient occlusion, hyperrealistic materials';
         case 'product':
-            return 'professional product photography, studio lighting, clean background';
+            return 'professional product photography, commercial advertisement quality, perfectly lit studio shot, clean white/gradient background, precise shadows, magazine-worthy, sharp focus on product details';
         default:
-            return '';
+            return 'professional quality, highly detailed';
     }
 };
 
 const getLightingEnhancement = (lightingType: string): string => {
     switch (lightingType) {
-        case 'natural': return 'natural daylight';
-        case 'golden': return 'golden hour lighting';
-        case 'studio': return 'professional studio lighting';
-        case 'dramatic': return 'dramatic rim lighting';
-        case 'neon': return 'neon lighting';
-        case 'moonlight': return 'moonlight, cool tones';
-        case 'overcast': return 'soft overcast lighting';
-        default: return '';
+        case 'natural': return 'natural daylight illumination, soft window light, organic shadows';
+        case 'golden': return 'golden hour sunlight, warm orange glow, long soft shadows, magical lighting';
+        case 'studio': return 'professional three-point studio lighting, key light with fill, rim light separation';
+        case 'dramatic': return 'dramatic Rembrandt lighting, strong shadows, high contrast, cinematic mood';
+        case 'neon': return 'neon lighting, cyberpunk glow, vibrant color spill, electric atmosphere';
+        case 'moonlight': return 'cool moonlight, blue hour tones, mysterious nocturnal atmosphere';
+        case 'overcast': return 'soft diffused overcast lighting, even illumination, no harsh shadows';
+        case 'backlit': return 'backlit silhouette edge, rim lighting, glowing outline, dramatic separation';
+        default: return 'professional lighting';
     }
 };
 
 const getPaletteEnhancement = (palette: StyleSettings['colorPalette']): string => {
     switch (palette) {
-        case 'warm': return 'warm color palette';
-        case 'cool': return 'cool color palette';
-        case 'neon': return 'neon colors, high saturation';
-        case 'muted': return 'muted colors, desaturated';
-        case 'monochrome': return 'monochromatic';
+        case 'warm': return 'warm color palette, amber and gold tones, cozy earthy colors';
+        case 'cool': return 'cool color palette, blue and teal tones, serene atmosphere';
+        case 'neon': return 'neon color palette, high saturation, electric pinks and blues, synthwave vibes';
+        case 'muted': return 'muted desaturated colors, pastel tones, subtle color harmony';
+        case 'monochrome': return 'monochromatic color scheme, single color family, sophisticated limited palette';
         case 'auto':
         default:
             return '';
     }
+};
+
+// ============================================
+// ENHANCED Negative Prompt for Quality
+// ============================================
+
+const getEnhancedNegativePrompt = (style: StyleSettings['style']): string => {
+    // Base quality negatives
+    const baseNegatives = [
+        'blurry', 'low quality', 'pixelated', 'jpeg artifacts', 'compression artifacts',
+        'watermark', 'text', 'logo', 'signature', 'username',
+        'cropped', 'out of frame', 'poorly drawn', 'bad anatomy',
+        'distorted proportions', 'duplicate', 'clone', 'mutation',
+        'deformed', 'ugly', 'disfigured', 'missing limbs', 'extra limbs',
+        'floating limbs', 'disconnected limbs', 'long neck', 'elongated body'
+    ];
+
+    // Consistency-focused negatives (prevent variations between frames)
+    const consistencyNegatives = [
+        'different character', 'inconsistent design', 'changed appearance',
+        'different face', 'different eyes', 'different hair', 'different clothes',
+        'changed colors', 'different style', 'different lighting',
+        'modified pose', 'different body proportions', 'altered features',
+        'asymmetrical eyes', 'uneven features', 'inconsistent details'
+    ];
+
+    const styleSpecificNegatives: Record<string, string[]> = {
+        photorealistic: ['cartoon', 'anime', 'painting', 'illustration', 'CGI', 'fake', 'plastic skin'],
+        cinematic: ['amateur', 'home video', 'phone camera', 'snapshot', 'overexposed', 'underexposed'],
+        anime: ['photorealistic', 'photograph', '3D render', 'realistic', 'western cartoon'],
+        concept: ['photograph', 'amateur art', 'MS Paint', 'low effort'],
+        '3d': ['2D', 'flat', 'hand drawn', 'sketch', 'painting'],
+        product: ['cluttered background', 'distracting elements', 'unprofessional', 'amateur lighting']
+    };
+
+    const styleNegs = styleSpecificNegatives[style] || [];
+    return [...baseNegatives, ...consistencyNegatives, ...styleNegs].join(', ');
 };
 
 // ============================================
@@ -145,11 +195,29 @@ export const buildBasePrompt = (
 ): string => {
     const parts: string[] = [];
 
+    // Core subject description
     parts.push(baseDescription.trim());
+
+    // Enhanced style modifiers
     parts.push(getStyleEnhancement(styleSettings.style));
-    parts.push(getLightingEnhancement(styleSettings.lightingType));
-    parts.push(getPaletteEnhancement(styleSettings.colorPalette));
-    parts.push('highly detailed, professional quality');
+
+    // Lighting (if specified and not auto)
+    const lightingMod = getLightingEnhancement(styleSettings.lightingType);
+    if (lightingMod) parts.push(lightingMod);
+
+    // Color palette (if specified and not auto)
+    const paletteMod = getPaletteEnhancement(styleSettings.colorPalette);
+    if (paletteMod) parts.push(paletteMod);
+
+    // Quality boosters
+    parts.push('masterpiece quality');
+    parts.push('award-winning');
+    parts.push('highly detailed');
+
+    // Consistency modifiers (critical for multi-frame)
+    parts.push('consistent character design');
+    parts.push('fixed proportions');
+    parts.push('symmetrical features');
 
     return parts.filter(Boolean).join(', ');
 };
@@ -202,7 +270,7 @@ const getAspectRatio = (size: string): string => {
 };
 
 // ============================================
-// FIBO API Client
+// FIBO API Client - ENHANCED
 // ============================================
 
 export type ApiProvider = 'bria' | 'fal' | 'demo';
@@ -234,18 +302,23 @@ export class FiboAPI {
     /**
      * Generate a single image using FIBO
      */
-    async generate(prompt: string, seed?: number, structuredPrompt?: string): Promise<FiboResult> {
+    async generate(
+        prompt: string,
+        seed?: number,
+        structuredPrompt?: string,
+        negativePrompt?: string
+    ): Promise<FiboResult> {
         // Demo mode - return placeholder images
         if (this.provider === 'demo' || !this.apiKey) {
             return this.generateDemo();
         }
 
         if (this.provider === 'bria') {
-            return this.generateWithBria(prompt, seed, structuredPrompt);
+            return this.generateWithBria(prompt, seed, structuredPrompt, negativePrompt);
         }
 
         // Fal.ai
-        return this.generateWithFal(prompt, seed);
+        return this.generateWithFal(prompt, seed, negativePrompt);
     }
 
     /**
@@ -271,15 +344,13 @@ export class FiboAPI {
 
     /**
      * Generate using BRIA Platform API v2 (Official FIBO API)
-     * 
-     * KEY FOR CONSISTENCY:
-     * - First shot: Generate with text prompt → Get structured_prompt back
-     * - Subsequent shots: Use structured_prompt + camera angle refinement
+     * ENHANCED with negative prompts and better consistency
      */
     private async generateWithBria(
         prompt: string,
         seed?: number,
-        structuredPrompt?: string
+        structuredPrompt?: string,
+        negativePrompt?: string
     ): Promise<FiboResult> {
         try {
             console.log('[BRIA API] Sending request...');
@@ -288,7 +359,7 @@ export class FiboAPI {
             const requestBody: Record<string, unknown> = {
                 model_version: 'FIBO',
                 aspect_ratio: getAspectRatio(this.imageSize),
-                num_steps: this.qualitySteps,
+                num_steps: Math.max(30, this.qualitySteps), // Minimum 30 steps for quality
                 sync: true,
             };
 
@@ -300,6 +371,11 @@ export class FiboAPI {
                 console.log('[BRIA API] Using structured_prompt with refinement');
             } else {
                 requestBody.prompt = prompt;
+            }
+
+            // Add negative prompt if provided
+            if (negativePrompt) {
+                requestBody.negative_prompt = negativePrompt;
             }
 
             if (seed !== undefined) {
@@ -347,16 +423,21 @@ export class FiboAPI {
     }
 
     /**
-     * Generate using Fal.ai
+     * Generate using Fal.ai with enhanced options
      */
-    private async generateWithFal(prompt: string, seed?: number): Promise<FiboResult> {
+    private async generateWithFal(
+        prompt: string,
+        seed?: number,
+        negativePrompt?: string
+    ): Promise<FiboResult> {
         try {
             const result = await fal.subscribe('fal-ai/bria/fibo', {
                 input: {
                     prompt,
+                    negative_prompt: negativePrompt,
                     image_size: this.getSizeParamFal(this.imageSize) as 'square_hd' | 'square' | 'portrait_4_3' | 'portrait_16_9' | 'landscape_4_3' | 'landscape_16_9',
-                    num_inference_steps: this.qualitySteps,
-                    guidance_scale: 5,
+                    num_inference_steps: Math.max(30, this.qualitySteps),
+                    guidance_scale: 7, // Increased for better prompt adherence
                     seed,
                 },
                 logs: true,
@@ -376,12 +457,11 @@ export class FiboAPI {
 
     /**
      * Generate a complete sequence of shots with MAXIMUM consistency
-     * 
-     * Strategy for consistency:
-     * 1. Generate first shot with full prompt → Get structured_prompt
-     * 2. For each subsequent shot, use the SAME structured_prompt 
-     *    but add camera angle as a refinement instruction
-     * 3. Use the SAME seed for all shots
+     * ENHANCED STRATEGY:
+     * 1. Generate first shot with enhanced full prompt + negative prompt → Get structured_prompt
+     * 2. For each subsequent shot, use the SAME structured_prompt + precise camera refinement
+     * 3. Use the SAME seed for all shots to ensure consistency
+     * 4. Include negative prompts to avoid quality issues
      */
     async generateSequence(
         baseDescription: string,
@@ -394,9 +474,14 @@ export class FiboAPI {
         const seed = baseSeed ?? Math.floor(Math.random() * 1000000);
         let baseStructuredPrompt: string | undefined;
 
-        console.log('[FIBO Sequence] Starting sequence generation');
+        // Generate enhanced negative prompt based on style
+        const negativePrompt = getEnhancedNegativePrompt(styleSettings.style);
+
+        console.log('[FIBO Sequence] Starting ENHANCED sequence generation');
         console.log('[FIBO Sequence] Using seed:', seed);
         console.log('[FIBO Sequence] Number of shots:', shots.length);
+        console.log('[FIBO Sequence] Style:', styleSettings.style);
+        console.log('[FIBO Sequence] Negative prompt length:', negativePrompt.length);
 
         for (let i = 0; i < shots.length; i++) {
             const shot = shots[i];
@@ -406,44 +491,60 @@ export class FiboAPI {
                 let result: FiboResult;
 
                 if (i === 0) {
-                    // FIRST SHOT: Full prompt to establish the subject
+                    // FIRST SHOT: Enhanced full prompt to establish the subject
                     const fullPrompt = buildShotPrompt(baseDescription, shot, styleSettings);
-                    console.log(`[FIBO] Shot 1/${shots.length}: Establishing base with full prompt`);
-                    console.log(`[FIBO] Prompt: ${fullPrompt.substring(0, 150)}...`);
+                    console.log(`[FIBO] Shot 1/${shots.length}: Establishing base with enhanced prompt`);
+                    console.log(`[FIBO] Prompt preview: ${fullPrompt.substring(0, 200)}...`);
 
-                    result = await this.generate(fullPrompt, seed);
+                    result = await this.generate(fullPrompt, seed, undefined, negativePrompt);
 
                     // Save the structured_prompt for subsequent shots
                     if (result.structured_prompt) {
                         baseStructuredPrompt = result.structured_prompt;
-                        console.log('[FIBO] Got structured_prompt, will use for consistency');
+                        console.log('[FIBO] ✓ Got structured_prompt, will use for maximum consistency');
                     }
                 } else {
-                    // SUBSEQUENT SHOTS: Use structured_prompt + camera refinement
-                    const cameraInstruction = `Change camera to: ${buildCameraInstruction(shot)}`;
+                    // SUBSEQUENT SHOTS: Use structured_prompt + ULTRA-STRICT camera refinement
+                    const cameraInstruction = buildCameraInstruction(shot);
+
+                    // Enhanced refinement prompt with strict consistency language
+                    const refinementPrompt = [
+                        `Camera rotation only: ${cameraInstruction}`,
+                        'CRITICAL: Keep EXACTLY the same character/subject',
+                        'Same face, same eyes, same body proportions',
+                        'Same clothing, same colors, same materials',
+                        'Same pose (standing), same arm positions',
+                        'Same lighting setup, same background',
+                        'Only the camera angle changes, nothing else'
+                    ].join('. ');
+
                     console.log(`[FIBO] Shot ${i + 1}/${shots.length}: ${shot.name}`);
-                    console.log(`[FIBO] Refinement: ${cameraInstruction}`);
+                    console.log(`[FIBO] Camera: ${shot.cameraAngle}°, Height: ${shot.cameraHeight}°`);
 
                     if (baseStructuredPrompt) {
-                        // Use the base structured prompt with camera angle refinement
-                        result = await this.generate(cameraInstruction, seed, baseStructuredPrompt);
+                        // Use the base structured prompt with strict camera angle refinement
+                        result = await this.generate(refinementPrompt, seed, baseStructuredPrompt, negativePrompt);
                     } else {
-                        // Fallback: use full prompt
-                        const fullPrompt = buildShotPrompt(baseDescription, shot, styleSettings);
-                        result = await this.generate(fullPrompt, seed);
+                        // Fallback: use full prompt with consistency modifiers
+                        console.log('[FIBO] Warning: No structured_prompt, using full prompt fallback');
+                        const fullPrompt = buildShotPrompt(baseDescription, shot, styleSettings) +
+                            ', same character, identical design, consistent appearance';
+                        result = await this.generate(fullPrompt, seed, undefined, negativePrompt);
                     }
                 }
 
                 results.push(result);
                 onProgress(i, 'complete', result);
+                console.log(`[FIBO] ✓ Shot ${i + 1} complete`);
+
             } catch (error) {
-                console.error(`Error generating shot ${i}:`, error);
+                console.error(`[FIBO] ✗ Error generating shot ${i + 1}:`, error);
                 onProgress(i, 'error');
                 throw error;
             }
         }
 
-        console.log('[FIBO Sequence] Complete! Generated', results.length, 'shots');
+        console.log('[FIBO Sequence] ✓ Complete! Generated', results.length, 'shots with enhanced consistency');
         return results;
     }
 

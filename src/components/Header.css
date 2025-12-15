@@ -33,21 +33,11 @@
     gap: var(--sp-3);
 }
 
-.logo-icon {
+.logo-image {
     width: 32px;
     height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--accent);
     border-radius: var(--radius-sm);
-}
-
-.logo-inner {
-    width: 14px;
-    height: 14px;
-    background: var(--bg-void);
-    border-radius: 2px;
+    object-fit: cover;
 }
 
 .logo-text {

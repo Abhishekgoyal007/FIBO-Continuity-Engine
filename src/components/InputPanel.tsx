@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Edit3,
@@ -7,7 +7,9 @@ import {
     ChevronDown,
     Sparkles,
     Loader2,
-    Check
+    Upload,
+    X,
+    Image as ImageIcon
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import type { StyleSettings } from '../store/useStore';
@@ -26,6 +28,9 @@ export function InputPanel() {
     const [expandedSections, setExpandedSections] = useState<string[]>(['style']);
     const [isEnhancing, setIsEnhancing] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [referenceImage, setReferenceImage] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!currentProject) return null;
 
@@ -37,6 +42,53 @@ export function InputPanel() {
                 ? prev.filter(s => s !== section)
                 : [...prev, section]
         );
+    };
+
+    // Handle file upload
+    const handleFileUpload = (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            addToast('error', 'Please upload an image file');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            addToast('error', 'Image must be less than 10MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target?.result as string;
+            setReferenceImage(dataUrl);
+            updateProject({ referenceImage: dataUrl });
+            addToast('success', 'Reference image uploaded!');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const removeImage = () => {
+        setReferenceImage(null);
+        updateProject({ referenceImage: undefined });
+        addToast('info', 'Reference image removed');
     };
 
     // Enhance prompt using Gemini AI
@@ -138,6 +190,50 @@ export function InputPanel() {
                     </AnimatePresence>
                 </div>
 
+                {/* Reference Image Upload */}
+                <div className="input-group">
+                    <label>Reference Image (Optional)</label>
+                    <div
+                        className={`image-upload-zone ${isDragging ? 'dragging' : ''} ${referenceImage ? 'has-image' : ''}`}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file);
+                            }}
+                            style={{ display: 'none' }}
+                        />
+
+                        {referenceImage ? (
+                            <div className="image-preview">
+                                <img src={referenceImage} alt="Reference" />
+                                <button
+                                    className="remove-image-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeImage();
+                                    }}
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="upload-placeholder">
+                                <Upload size={24} />
+                                <span>Drop image here or click to upload</span>
+                                <small>PNG, JPG up to 10MB</small>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Visual Style Presets with Images */}
                 <div className="input-group">
                     <label>Visual Style</label>
@@ -155,11 +251,6 @@ export function InputPanel() {
                                         <img src={preset.previewImage} alt={preset.name} />
                                     ) : (
                                         <div className="preset-gradient" style={{ background: preset.cssGradient }} />
-                                    )}
-                                    {styleSettings.style === preset.id && (
-                                        <div className="preset-selected">
-                                            <Check size={14} />
-                                        </div>
                                     )}
                                 </div>
                                 <span className="preset-label">{preset.name}</span>
@@ -198,11 +289,6 @@ export function InputPanel() {
                                             ) : (
                                                 <div className="preset-gradient" style={{ background: preset.cssGradient }} />
                                             )}
-                                            {styleSettings.lightingType === preset.id && (
-                                                <div className="preset-selected">
-                                                    <Check size={12} />
-                                                </div>
-                                            )}
                                         </div>
                                         <span className="lighting-label">{preset.name}</span>
                                     </motion.button>
@@ -238,11 +324,6 @@ export function InputPanel() {
                                                 <img src={palette.previewImage} alt={palette.name} />
                                             ) : (
                                                 <div className="preset-gradient" style={{ background: palette.cssGradient }} />
-                                            )}
-                                            {styleSettings.colorPalette === palette.id && (
-                                                <div className="preset-selected">
-                                                    <Check size={12} />
-                                                </div>
                                             )}
                                         </div>
                                         <span className="palette-label">{palette.name}</span>

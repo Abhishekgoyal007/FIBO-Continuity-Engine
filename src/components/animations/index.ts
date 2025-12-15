@@ -8,3 +8,7 @@ export { BlobCursor } from './BlobCursor';
 export { GooeyNav } from './GooeyNav';
 export { RotatingText } from './RotatingText';
 export { ScrollStack, ScrollStackItem } from './ScrollStack';
+export { CountUp } from './CountUp';
+export { Particles } from './Particles';
+export { ScrollProgress } from './ScrollProgress';
+export { BeforeAfterSlider } from './BeforeAfterSlider';

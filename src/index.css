@@ -82,6 +82,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -89,14 +90,24 @@ body {
   background: var(--bg-void);
   color: var(--text-primary);
   min-height: 100vh;
-  overflow-x: hidden;
   line-height: 1.5;
+  -webkit-overflow-scrolling: touch;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* GPU acceleration for animations */
+.landing-page,
+.scroll-stack-card,
+.aurora-container {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Scrollbar - Minimal */
@@ -341,12 +352,13 @@ textarea::placeholder {
 }
 
 /* ============================================
-   Modal
+   Modal - Premium Design
    ============================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,13 +367,16 @@ textarea::placeholder {
 }
 
 .modal-content {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   max-height: 85vh;
   overflow: hidden;
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .modal-header {
@@ -369,12 +384,14 @@ textarea::placeholder {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-5) var(--sp-6);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.modal-header h3 {
-  font-size: 1rem;
-  font-weight: 500;
+.modal-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
 }
 
 .modal-body {
@@ -387,9 +404,9 @@ textarea::placeholder {
   display: flex;
   justify-content: flex-end;
   gap: var(--sp-3);
-  padding: var(--sp-4) var(--sp-6);
-  border-top: 1px solid var(--border);
-  background: var(--bg-secondary);
+  padding: var(--sp-5) var(--sp-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* ============================================

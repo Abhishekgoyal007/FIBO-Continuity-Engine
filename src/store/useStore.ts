@@ -37,6 +37,7 @@ export interface Project {
   id: string;
   name: string;
   prompt: string;
+  referenceImage?: string; // Base64 data URL of uploaded reference image
   styleSettings: StyleSettings;
   shots: Shot[];
   baseJsonPrompt?: string;

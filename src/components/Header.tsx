@@ -13,9 +13,7 @@ export function Header() {
         <header className="app-header">
             <div className="header-left">
                 <div className="logo">
-                    <div className="logo-icon">
-                        <div className="logo-inner" />
-                    </div>
+                    <img src="/logo.png" alt="FIBO" className="logo-image" />
                     <div className="logo-text">
                         <span className="logo-title">FIBO Continuity Engine</span>
                         <span className="logo-tagline">Perfect Multi-Frame Consistency</span>

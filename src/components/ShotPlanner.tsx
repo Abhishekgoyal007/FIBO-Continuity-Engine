@@ -409,6 +409,13 @@ export function ShotPlanner() {
                             className="btn btn-generate"
                             onClick={handleGenerate}
                             disabled={!canGenerate}
+                            title={!canGenerate ? (
+                                !hasValidPrompt ? "Enter a prompt (min 10 characters)" :
+                                    shots.length === 0 ? "Add shots first" :
+                                        needsApiKey && !settings.apiKey ? "Set API key in Settings or use Demo Mode" :
+                                            isGenerating ? "Generation in progress" :
+                                                "Ready to generate"
+                            ) : "Generate all shots"}
                         >
                             {isGenerating ? (
                                 <>

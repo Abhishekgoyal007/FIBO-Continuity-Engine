@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { X, Sparkles, Zap, Cloud, HardDrive } from 'lucide-react';
+import { X, Sparkles, Zap, Cloud, HardDrive, Check } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import './SettingsModal.css';
 
@@ -100,6 +100,11 @@ export function SettingsModal() {
                                             </span>
                                             <span className="provider-desc">{provider.description}</span>
                                         </div>
+                                        {settings.apiProvider === provider.id && (
+                                            <div className="provider-check">
+                                                <Check size={14} />
+                                            </div>
+                                        )}
                                     </button>
                                 );
                             })}
