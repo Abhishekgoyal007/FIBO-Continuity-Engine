@@ -6,8 +6,6 @@ Built for the [BRIA FIBO Hackathon](https://bria-ai.devpost.com/)
 
 🔗 **[Live Demo](https://fibo-continuity-engine.vercel.app)** | 📽️ **[Demo Video](#)** | 🐙 **[GitHub](https://github.com/Abhishekgoyal007/FIBO-Continuity-Engine)**
 
-![FIBO Continuity Engine]
-
 ---
 
 ## 🎯 The Problem
