@@ -143,7 +143,19 @@ export function GooeyNav({
         }
 
         // Call custom onClick if provided
-        item.onClick?.();
+        if (item.onClick) {
+            item.onClick();
+        } else if (item.href && item.href !== '#') {
+            // Smooth scroll to section
+            const targetId = item.href.replace('#', '');
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if (item.href === '#') {
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>, index: number, item: NavItem) => {

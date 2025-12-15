@@ -17,8 +17,7 @@ import {
     Wand2,
     RotateCcw,
     CheckCircle,
-    Cpu,
-    Box
+    Cpu
 } from 'lucide-react';
 import {
     Aurora,
@@ -31,6 +30,13 @@ import {
     ScrollProgress
 } from './animations';
 import './LandingPage.css';
+
+// Import FIBO-generated images
+import FrontView from '../assets/landingpageImages/Front_View.png';
+import ThreeQuarterLeft from '../assets/landingpageImages/3_4_Left.png';
+import SideView from '../assets/landingpageImages/Side_View.png';
+import ThreeQuarterBack from '../assets/landingpageImages/3_4_Back.png';
+import BackView from '../assets/landingpageImages/Back_View.png';
 
 interface LandingPageProps {
     onEnterApp: () => void;
@@ -45,12 +51,21 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
         { label: 'Launch App', href: '#', onClick: onEnterApp }
     ];
 
-    // Sample showcase images - FIBO generated samples
+    // FIBO-generated showcase images - real AI generated samples
     const showcaseFrames = [
-        { angle: '0°', label: 'Front', image: '/sample-1.jpg' },
-        { angle: '45°', label: '3/4 View', image: '/sample-2.jpg' },
-        { angle: '90°', label: 'Side', image: '/sample-3.jpg' },
-        { angle: '180°', label: 'Back', image: '/sample-4.jpg' },
+        { angle: '0°', label: 'Front', image: FrontView },
+        { angle: '45°', label: '3/4 Left', image: ThreeQuarterLeft },
+        { angle: '90°', label: 'Side', image: SideView },
+        { angle: '135°', label: '3/4 Back', image: ThreeQuarterBack },
+        { angle: '180°', label: 'Back', image: BackView },
+    ];
+
+    // Additional sample images for gallery
+    const galleryImages = [
+        { category: 'Product', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80' },
+        { category: 'Character', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&q=80' },
+        { category: '3D Model', image: 'https://images.unsplash.com/photo-1545670723-196ed0954986?w=400&h=400&fit=crop&q=80' },
+        { category: 'Game Asset', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=400&fit=crop&q=80' },
     ];
 
     return (
@@ -75,10 +90,16 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
             {/* Navigation */}
             <header className="landing-header">
                 <div className="nav-logo">
-                    <div className="logo-icon-animated">
-                        <Box size={20} />
+                    <div className="logo-grid">
+                        <div className="logo-square"></div>
+                        <div className="logo-square"></div>
+                        <div className="logo-square"></div>
+                        <div className="logo-square"></div>
                     </div>
-                    <span>FIBO</span>
+                    <div className="logo-text">
+                        <span className="logo-main">FIBO</span>
+                        <span className="logo-sub">CONTINUITY ENGINE</span>
+                    </div>
                 </div>
                 <GooeyNav
                     items={navItems}
@@ -387,6 +408,38 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
                 </div>
             </section>
 
+            {/* Sample Gallery */}
+            <section className="gallery-section">
+                <motion.div
+                    className="section-header"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                >
+                    <span className="section-tag">Sample Gallery</span>
+                    <h2>See What's Possible</h2>
+                </motion.div>
+
+                <div className="sample-gallery">
+                    {galleryImages.map((item, index) => (
+                        <motion.div
+                            key={item.category}
+                            className="gallery-item"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 }}
+                            whileHover={{ scale: 1.05, y: -10 }}
+                        >
+                            <div className="gallery-image">
+                                <img src={item.image} alt={item.category} loading="lazy" />
+                            </div>
+                            <div className="gallery-label">{item.category}</div>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
+
             {/* Final CTA */}
             <section className="cta-section">
                 <motion.div
@@ -413,8 +466,11 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
             <footer className="landing-footer">
                 <div className="footer-content">
                     <div className="footer-brand">
-                        <div className="logo-icon-animated small">
-                            <Box size={16} />
+                        <div className="logo-grid small">
+                            <div className="logo-square"></div>
+                            <div className="logo-square"></div>
+                            <div className="logo-square"></div>
+                            <div className="logo-square"></div>
                         </div>
                         <span>FIBO Continuity Engine</span>
                     </div>

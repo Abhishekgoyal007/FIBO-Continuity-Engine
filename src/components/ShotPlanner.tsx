@@ -34,13 +34,17 @@ export function ShotPlanner() {
         settings,
         isGenerating,
         currentGeneratingIndex,
+        generationProgress,
         addShot,
         addShotsFromTemplate,
         updateShot,
+        removeShot,
         setEditingShotId,
         setIsGenerating,
         setCurrentGeneratingIndex,
-        addToast
+        setGenerationProgress,
+        addToast,
+        pushToHistory
     } = useStore();
 
     // Base image preview state
@@ -51,6 +55,7 @@ export function ShotPlanner() {
     } | null>(null);
     const [isPreviewingBase, setIsPreviewingBase] = useState(false);
     const [showBasePreview, setShowBasePreview] = useState(false);
+    const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
     if (!currentProject) return null;
 
@@ -61,11 +66,13 @@ export function ShotPlanner() {
     const canPreview = hasValidPrompt && !isGenerating && !isPreviewingBase && (!needsApiKey || settings.apiKey);
 
     const handleAddTemplate = (templateId: string) => {
+        pushToHistory('Add template');
         addShotsFromTemplate(templateId);
         addToast('success', `Added ${templateId.replace('-', ' ')} shots`);
     };
 
     const handleAddCustomShot = () => {
+        pushToHistory('Add shot');
         addShot({
             name: `Shot ${shots.length + 1}`,
             cameraAngle: 0,
@@ -74,6 +81,50 @@ export function ShotPlanner() {
             framing: 'medium',
             instructions: '',
         });
+    };
+
+    const handleRemoveShot = (e: React.MouseEvent, shotId: string) => {
+        e.stopPropagation();
+        pushToHistory('Remove shot');
+        removeShot(shotId);
+        addToast('info', 'Shot removed');
+    };
+
+    const handleRegenerateShot = async (e: React.MouseEvent, shot: Shot) => {
+        e.stopPropagation();
+        if (!hasValidPrompt || isGenerating) return;
+
+        setRegeneratingId(shot.id);
+        try {
+            const api = initFiboAPI(
+                settings.apiKey,
+                settings.imageSize,
+                settings.qualitySteps,
+                settings.apiProvider as 'fal' | 'bria' | 'demo'
+            );
+
+            updateShot(shot.id, { status: 'generating' });
+            addToast('info', `Regenerating ${shot.name}...`);
+
+            const basePrompt = buildBasePrompt(currentProject.prompt, currentProject.styleSettings);
+            const anglePrompt = `${basePrompt}, ${shot.cameraAngle}° angle, ${shot.framing} framing`;
+
+            const result = await api.generate(anglePrompt);
+
+            if (result.images && result.images.length > 0) {
+                updateShot(shot.id, {
+                    status: 'complete',
+                    imageUrl: result.images[0].url
+                });
+                addToast('success', `${shot.name} regenerated!`);
+            }
+        } catch (error) {
+            console.error('Regenerate error:', error);
+            updateShot(shot.id, { status: 'error', error: 'Regeneration failed' });
+            addToast('error', 'Regeneration failed');
+        } finally {
+            setRegeneratingId(null);
+        }
     };
 
     // Generate base preview image first
@@ -150,6 +201,12 @@ export function ShotPlanner() {
                 currentProject.styleSettings,
                 (index, status, result) => {
                     setCurrentGeneratingIndex(index);
+
+                    // Calculate progress percentage
+                    const baseProgress = (index / shots.length) * 100;
+                    const statusProgress = status === 'start' ? 0 : status === 'complete' ? (1 / shots.length) * 100 : 0;
+                    const progress = Math.min(99, baseProgress + statusProgress);
+                    setGenerationProgress(progress, `Generating ${shots[index]?.name || `shot ${index + 1}`}...`);
 
                     if (status === 'start') {
                         updateShot(shots[index].id, { status: 'generating' });
@@ -235,6 +292,12 @@ export function ShotPlanner() {
                 currentProject.styleSettings,
                 (index, status, result) => {
                     setCurrentGeneratingIndex(index);
+
+                    // Calculate progress percentage
+                    const baseProgress = (index / shots.length) * 100;
+                    const statusProgress = status === 'start' ? 0 : status === 'complete' ? (1 / shots.length) * 100 : 0;
+                    const progress = Math.min(99, baseProgress + statusProgress);
+                    setGenerationProgress(progress, `Generating ${shots[index]?.name || `shot ${index + 1}`}...`);
 
                     if (status === 'start') {
                         updateShot(shots[index].id, { status: 'generating' });
@@ -352,7 +415,7 @@ export function ShotPlanner() {
                             shots.map((shot, index) => (
                                 <motion.div
                                     key={shot.id}
-                                    className={`shot-card ${shot.status}`}
+                                    className={`shot-card ${shot.status} ${regeneratingId === shot.id ? 'regenerating' : ''}`}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
@@ -372,6 +435,30 @@ export function ShotPlanner() {
                                             <img src={shot.imageUrl} alt={shot.name} />
                                         </div>
                                     )}
+                                    <div className="shot-actions">
+                                        {shot.status === 'complete' && (
+                                            <button
+                                                className="btn btn-sm btn-icon btn-ghost"
+                                                onClick={(e) => handleRegenerateShot(e, shot)}
+                                                disabled={regeneratingId === shot.id || isGenerating}
+                                                title="Regenerate this shot"
+                                            >
+                                                {regeneratingId === shot.id ? (
+                                                    <Loader2 size={14} className="spin" />
+                                                ) : (
+                                                    <RefreshCw size={14} />
+                                                )}
+                                            </button>
+                                        )}
+                                        <button
+                                            className="btn btn-sm btn-icon btn-ghost btn-danger"
+                                            onClick={(e) => handleRemoveShot(e, shot.id)}
+                                            disabled={isGenerating}
+                                            title="Remove shot"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
                                     <div className="shot-status">
                                         {getShotStatusIcon(shot, index)}
                                     </div>
@@ -384,9 +471,23 @@ export function ShotPlanner() {
                 {/* Generate Buttons */}
                 <div className="panel-footer">
                     <div className="generation-info">
-                        <span className="shot-count">{shots.length} shot{shots.length !== 1 ? 's' : ''}</span>
-                        <span className="separator">•</span>
-                        <span className="estimate">~{estimatedTime} min</span>
+                        {isGenerating ? (
+                            <>
+                                <div className="progress-bar">
+                                    <div
+                                        className="progress-fill"
+                                        style={{ width: `${generationProgress}%` }}
+                                    />
+                                </div>
+                                <span className="progress-text">{Math.round(generationProgress)}%</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="shot-count">{shots.length} shot{shots.length !== 1 ? 's' : ''}</span>
+                                <span className="separator">•</span>
+                                <span className="estimate">~{estimatedTime} min</span>
+                            </>
+                        )}
                     </div>
                     <div className="footer-buttons">
                         {/* Preview Base Button */}

@@ -13,28 +13,84 @@ import {
     RefreshCw,
     Play,
     Pause,
-    Film
+    Film,
+    FileImage,
+    Layers,
+    X
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { SkeletonGallery } from './SkeletonLoader';
+import { LazyImage } from './LazyImage';
+import './LazyImage.css';
 import './OutputGallery.css';
 
 export function OutputGallery() {
-    const { currentProject, consistencyScore, addToast, setConsistencyScore } = useStore();
+    const {
+        currentProject,
+        consistencyScore,
+        addToast,
+        setConsistencyScore,
+        isGenerating,
+        currentGeneratingIndex,
+        exportFormat,
+        exportWithMetadata,
+        setExportFormat,
+        setExportWithMetadata,
+        setShowComparisonTool,
+        addToGenerationHistory
+    } = useStore();
+
     const [isExporting, setIsExporting] = useState(false);
     const [isExportingGif, setIsExportingGif] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [animationIndex, setAnimationIndex] = useState(0);
+    const [showExportMenu, setShowExportMenu] = useState(false);
     const animationRef = useRef<NodeJS.Timeout | null>(null);
+    const exportMenuRef = useRef<HTMLDivElement>(null);
 
     if (!currentProject) return null;
 
+
     const completedShots = currentProject.shots.filter(shot => shot.status === 'complete' && shot.imageUrl);
 
-    // Auto-analyze when we have new completed shots
+    // Close export menu on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Auto-analyze when generation completes
+    useEffect(() => {
+        if (!isGenerating && completedShots.length >= 2 && !consistencyScore) {
+            analyzeConsistency();
+        }
+    }, [isGenerating, completedShots.length]);
+
+    // Save to generation history when complete
+    useEffect(() => {
+        if (!isGenerating && completedShots.length > 0 && currentProject.prompt) {
+            addToGenerationHistory({
+                prompt: currentProject.prompt,
+                shots: completedShots.map(s => ({
+                    name: s.name,
+                    imageUrl: s.imageUrl!,
+                    cameraAngle: s.cameraAngle
+                })),
+                styleSettings: currentProject.styleSettings,
+                consistencyScore: consistencyScore || undefined
+            });
+        }
+    }, [isGenerating]);
+
     const analyzeConsistency = async () => {
         if (completedShots.length < 2) return;
 
@@ -57,6 +113,14 @@ export function OutputGallery() {
         }
     };
 
+    const getFileExtension = (format: string) => {
+        switch (format) {
+            case 'jpg': return 'jpg';
+            case 'webp': return 'webp';
+            default: return 'png';
+        }
+    };
+
     const handleExportAll = async () => {
         if (completedShots.length === 0) {
             addToast('error', 'No images to export');
@@ -64,10 +128,13 @@ export function OutputGallery() {
         }
 
         setIsExporting(true);
+        setShowExportMenu(false);
 
         try {
             const zip = new JSZip();
-            const folder = zip.folder(currentProject.name.replace(/[^a-z0-9]/gi, '_'));
+            const folderName = currentProject.name.replace(/[^a-z0-9]/gi, '_');
+            const folder = zip.folder(folderName);
+            const ext = getFileExtension(exportFormat);
 
             // Download each image and add to zip
             for (const shot of completedShots) {
@@ -75,7 +142,7 @@ export function OutputGallery() {
                     try {
                         const response = await fetch(shot.imageUrl);
                         const blob = await response.blob();
-                        const filename = `${shot.name.replace(/[^a-z0-9]/gi, '_')}.png`;
+                        const filename = `${shot.name.replace(/[^a-z0-9]/gi, '_')}.${ext}`;
                         folder?.file(filename, blob);
                     } catch (err) {
                         console.error(`Failed to fetch ${shot.name}:`, err);
@@ -83,28 +150,53 @@ export function OutputGallery() {
                 }
             }
 
-            // Add consistency report
-            if (consistencyScore) {
-                const report = `FIBO Continuity Engine - Consistency Report
+            // Add metadata if enabled
+            if (exportWithMetadata) {
+                const metadata = {
+                    project: currentProject.name,
+                    prompt: currentProject.prompt,
+                    styleSettings: currentProject.styleSettings,
+                    generatedAt: new Date().toISOString(),
+                    shots: completedShots.map(s => ({
+                        name: s.name,
+                        cameraAngle: s.cameraAngle,
+                        cameraHeight: s.cameraHeight,
+                        fov: s.fov,
+                        framing: s.framing
+                    })),
+                    consistencyScore: consistencyScore
+                };
+                folder?.file('metadata.json', JSON.stringify(metadata, null, 2));
+
+                // Add text report
+                const report = `FIBO Continuity Engine - Export Report
 ========================================
 Project: ${currentProject.name}
 Generated: ${new Date().toISOString()}
 
-Overall Score: ${consistencyScore.overall}%
-Color Palette: ${consistencyScore.colorPalette}%
-Structure: ${consistencyScore.structure}%
-Lighting: ${consistencyScore.lighting}%
+Prompt:
+${currentProject.prompt}
 
-Shots Generated: ${completedShots.length}
-${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
+Style: ${currentProject.styleSettings.style}
+Lighting: ${currentProject.styleSettings.lightingType}
+Color Palette: ${currentProject.styleSettings.colorPalette}
+
+${consistencyScore ? `Consistency Scores:
+- Overall: ${consistencyScore.overall}%
+- Color Palette: ${consistencyScore.colorPalette}%
+- Structure: ${consistencyScore.structure}%
+- Lighting: ${consistencyScore.lighting}%` : ''}
+
+Shots (${completedShots.length}):
+${completedShots.map((s, i) => `${i + 1}. ${s.name} - ${s.cameraAngle}° angle`).join('\n')}
 `;
-                folder?.file('consistency_report.txt', report);
+                folder?.file('report.txt', report);
             }
 
             const zipBlob = await zip.generateAsync({ type: 'blob' });
-            saveAs(zipBlob, `${currentProject.name.replace(/[^a-z0-9]/gi, '_')}_sequence.zip`);
+            saveAs(zipBlob, `${folderName}_sequence.zip`);
 
-            addToast('success', `Exported ${completedShots.length} images + report`);
+            addToast('success', `Exported ${completedShots.length} images as ${exportFormat.toUpperCase()}`);
         } catch (error) {
             console.error('Export error:', error);
             addToast('error', 'Export failed');
@@ -117,13 +209,14 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
         try {
             const response = await fetch(imageUrl);
             const blob = await response.blob();
-            saveAs(blob, `${name.replace(/[^a-z0-9]/gi, '_')}.png`);
+            const ext = getFileExtension(exportFormat);
+            saveAs(blob, `${name.replace(/[^a-z0-9]/gi, '_')}.${ext}`);
         } catch (error) {
             addToast('error', 'Download failed');
         }
     };
 
-    // GIF Export using gifshot
+    // GIF Export
     const handleExportGif = async () => {
         if (completedShots.length < 2) {
             addToast('error', 'Need at least 2 images for GIF');
@@ -131,6 +224,8 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
         }
 
         setIsExportingGif(true);
+        setShowExportMenu(false);
+
         try {
             const gifshot = await import('gifshot');
             const imageUrls = completedShots.map(s => s.imageUrl!);
@@ -190,7 +285,7 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
 
     const getScoreColor = (score: number): string => {
         if (score >= 80) return 'var(--success)';
-        if (score >= 60) return 'var(--accent-primary)';
+        if (score >= 60) return 'var(--accent)';
         if (score >= 40) return 'var(--warning)';
         return 'var(--error)';
     };
@@ -203,7 +298,7 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
     };
 
     return (
-        <section className="panel panel-output">
+        <div className="panel-inner">
             <div className="panel-header">
                 <h2>
                     <ImageIcon size={18} />
@@ -221,15 +316,10 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                             </button>
                             <button
                                 className="btn btn-sm btn-ghost"
-                                onClick={handleExportGif}
-                                disabled={isExportingGif}
-                                title="Export as GIF"
+                                onClick={() => setShowComparisonTool(true)}
+                                title="Compare Frames"
                             >
-                                {isExportingGif ? (
-                                    <Loader2 size={16} className="spin" />
-                                ) : (
-                                    <Film size={16} />
-                                )}
+                                <Layers size={16} />
                             </button>
                             {!isAnalyzing && (
                                 <button
@@ -242,23 +332,83 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                             )}
                         </>
                     )}
-                    <button
-                        className="btn btn-sm btn-ghost"
-                        onClick={handleExportAll}
-                        disabled={completedShots.length === 0 || isExporting}
-                    >
-                        {isExporting ? (
-                            <Loader2 size={16} className="spin" />
-                        ) : (
-                            <Download size={16} />
-                        )}
-                        Export All
-                    </button>
+
+                    {/* Export Dropdown */}
+                    <div className="export-dropdown" ref={exportMenuRef}>
+                        <button
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => setShowExportMenu(!showExportMenu)}
+                            disabled={completedShots.length === 0 || isExporting || isExportingGif}
+                        >
+                            {isExporting || isExportingGif ? (
+                                <Loader2 size={16} className="spin" />
+                            ) : (
+                                <Download size={16} />
+                            )}
+                            Export
+                        </button>
+
+                        <AnimatePresence>
+                            {showExportMenu && (
+                                <motion.div
+                                    className="export-menu"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <div className="export-menu-section">
+                                        <label>Format</label>
+                                        <div className="format-options">
+                                            {(['png', 'jpg', 'webp'] as const).map(format => (
+                                                <button
+                                                    key={format}
+                                                    className={`format-btn ${exportFormat === format ? 'active' : ''}`}
+                                                    onClick={() => setExportFormat(format)}
+                                                >
+                                                    {format.toUpperCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="export-menu-section">
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={exportWithMetadata}
+                                                onChange={(e) => setExportWithMetadata(e.target.checked)}
+                                            />
+                                            <span>Include metadata</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="export-menu-actions">
+                                        <button
+                                            className="btn btn-sm"
+                                            onClick={handleExportAll}
+                                        >
+                                            <FileImage size={14} />
+                                            Export ZIP
+                                        </button>
+                                        {completedShots.length >= 2 && (
+                                            <button
+                                                className="btn btn-sm"
+                                                onClick={handleExportGif}
+                                            >
+                                                <Film size={14} />
+                                                Export GIF
+                                            </button>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
 
             <div className="panel-content">
-                {completedShots.length === 0 ? (
+                {completedShots.length === 0 && !isGenerating ? (
                     <div className="output-empty-state">
                         <div className="pulse-ring" />
                         <Grid size={64} strokeWidth={1} />
@@ -266,7 +416,18 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                     </div>
                 ) : (
                     <>
-                        {/* Consistency Score Panel - Show First */}
+                        {/* Generating State Skeleton */}
+                        {isGenerating && completedShots.length === 0 && (
+                            <div className="generating-skeleton">
+                                <SkeletonGallery count={4} />
+                                <div className="generating-info">
+                                    <Loader2 size={16} className="spin" />
+                                    <span>Generating shot {currentGeneratingIndex + 1}...</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Consistency Score Panel */}
                         {consistencyScore && (
                             <motion.div
                                 className="consistency-panel"
@@ -379,7 +540,11 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.3, delay: index * 0.05 }}
                                 >
-                                    <img src={shot.imageUrl} alt={shot.name} />
+                                    <LazyImage
+                                        src={shot.imageUrl!}
+                                        alt={shot.name}
+                                        className="output-image"
+                                    />
                                     <div className="output-item-overlay">
                                         <span className="output-item-name">{shot.name}</span>
                                         <div className="output-item-actions">
@@ -432,10 +597,16 @@ ${completedShots.map((s, i) => `${i + 1}. ${s.name}`).join('\n')}
                             exit={{ scale: 0.9 }}
                         >
                             <img src={selectedImage} alt="Full size preview" />
+                            <button
+                                className="lightbox-close"
+                                onClick={() => setSelectedImage(null)}
+                            >
+                                <X size={20} />
+                            </button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </section>
+        </div>
     );
 }

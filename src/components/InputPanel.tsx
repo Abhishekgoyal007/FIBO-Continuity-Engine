@@ -1,20 +1,23 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Edit3,
     Sun,
     Palette,
     ChevronDown,
-    Sparkles,
     Loader2,
     Upload,
     X,
-    Image as ImageIcon
+    Bookmark,
+    Image as ImageIcon,
+    Wand2,
+    Copy
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import type { StyleSettings } from '../store/useStore';
 import { enhancePrompt, suggestImprovements } from '../utils/promptEnhancer';
 import { LIGHTING_PRESETS, COLOR_PALETTES, STYLE_PRESETS } from '../utils/visualPresets';
+import { copyToClipboard } from '../utils/clipboard';
 import './InputPanel.css';
 
 export function InputPanel() {
@@ -22,19 +25,20 @@ export function InputPanel() {
         currentProject,
         updateProject,
         updateStyleSettings,
-        addToast
+        setShowPresets,
+        addToast,
+        pushToHistory
     } = useStore();
 
     const [expandedSections, setExpandedSections] = useState<string[]>(['style']);
     const [isEnhancing, setIsEnhancing] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [referenceImage, setReferenceImage] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!currentProject) return null;
 
-    const { styleSettings } = currentProject;
+    const { styleSettings, referenceImage } = currentProject;
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev =>
@@ -45,13 +49,13 @@ export function InputPanel() {
     };
 
     // Handle file upload
-    const handleFileUpload = (file: File) => {
+    const handleFileUpload = useCallback((file: File) => {
         if (!file.type.startsWith('image/')) {
             addToast('error', 'Please upload an image file');
             return;
         }
 
-        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        if (file.size > 10 * 1024 * 1024) {
             addToast('error', 'Image must be less than 10MB');
             return;
         }
@@ -59,12 +63,12 @@ export function InputPanel() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const dataUrl = e.target?.result as string;
-            setReferenceImage(dataUrl);
+            pushToHistory('Upload reference image');
             updateProject({ referenceImage: dataUrl });
             addToast('success', 'Reference image uploaded!');
         };
         reader.readAsDataURL(file);
-    };
+    }, [addToast, pushToHistory, updateProject]);
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
@@ -86,12 +90,12 @@ export function InputPanel() {
     };
 
     const removeImage = () => {
-        setReferenceImage(null);
+        pushToHistory('Remove reference image');
         updateProject({ referenceImage: undefined });
         addToast('info', 'Reference image removed');
     };
 
-    // Enhance prompt using Gemini AI
+    // Enhance prompt using AI
     const handleEnhancePrompt = async () => {
         if (!currentProject.prompt.trim()) {
             addToast('error', 'Please enter a prompt first');
@@ -100,13 +104,13 @@ export function InputPanel() {
 
         setIsEnhancing(true);
         try {
-            // Try with Gemini API key if available (can add in settings)
             const result = await enhancePrompt(
                 currentProject.prompt,
                 styleSettings.style,
-                undefined // Could add Gemini API key to settings
+                undefined
             );
 
+            pushToHistory('Enhance prompt');
             updateProject({ prompt: result.enhanced });
 
             if (result.suggestions.length > 0) {
@@ -134,13 +138,39 @@ export function InputPanel() {
         }
     };
 
+    const handlePromptBlur = () => {
+        if (currentProject.prompt.trim()) {
+            pushToHistory('Edit prompt');
+        }
+    };
+
+    const handleCopyPrompt = async () => {
+        if (!currentProject.prompt.trim()) {
+            addToast('error', 'No prompt to copy');
+            return;
+        }
+        const success = await copyToClipboard(currentProject.prompt);
+        if (success) {
+            addToast('success', 'Prompt copied to clipboard!');
+        } else {
+            addToast('error', 'Failed to copy prompt');
+        }
+    };
+
     return (
-        <section className="panel panel-input">
+        <div className="panel-inner">
             <div className="panel-header">
                 <h2>
                     <Edit3 size={18} />
                     Character & Scene
                 </h2>
+                <button
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => setShowPresets(true)}
+                    title="Saved Presets"
+                >
+                    <Bookmark size={16} />
+                </button>
             </div>
 
             <div className="panel-content">
@@ -148,24 +178,35 @@ export function InputPanel() {
                 <div className="input-group prompt-group">
                     <div className="prompt-header">
                         <label htmlFor="quickPrompt">Describe Your Subject</label>
-                        <button
-                            className="btn btn-sm btn-enhance"
-                            onClick={handleEnhancePrompt}
-                            disabled={isEnhancing || !currentProject.prompt.trim()}
-                            title="Enhance with AI"
-                        >
-                            {isEnhancing ? (
-                                <Loader2 size={14} className="spin" />
-                            ) : (
-                                <Sparkles size={14} />
-                            )}
-                            Enhance
-                        </button>
+                        <div className="prompt-actions">
+                            <button
+                                className="btn btn-sm btn-ghost"
+                                onClick={handleCopyPrompt}
+                                disabled={!currentProject.prompt.trim()}
+                                title="Copy prompt"
+                            >
+                                <Copy size={14} />
+                            </button>
+                            <button
+                                className="btn btn-sm btn-enhance"
+                                onClick={handleEnhancePrompt}
+                                disabled={isEnhancing || !currentProject.prompt.trim()}
+                                title="Enhance with AI"
+                            >
+                                {isEnhancing ? (
+                                    <Loader2 size={14} className="spin" />
+                                ) : (
+                                    <Wand2 size={14} />
+                                )}
+                                Enhance
+                            </button>
+                        </div>
                     </div>
                     <textarea
                         id="quickPrompt"
                         value={currentProject.prompt}
                         onChange={(e) => handlePromptChange(e.target.value)}
+                        onBlur={handlePromptBlur}
                         placeholder="e.g., Square glass perfume bottle with gold cap, clear liquid, 'LUXE' label, on marble surface"
                         rows={4}
                     />
@@ -198,7 +239,7 @@ export function InputPanel() {
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={() => !referenceImage && fileInputRef.current?.click()}
                     >
                         <input
                             ref={fileInputRef}
@@ -214,24 +255,42 @@ export function InputPanel() {
                         {referenceImage ? (
                             <div className="image-preview">
                                 <img src={referenceImage} alt="Reference" />
-                                <button
-                                    className="remove-image-btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeImage();
-                                    }}
-                                >
-                                    <X size={16} />
-                                </button>
+                                <div className="image-preview-overlay">
+                                    <button
+                                        className="btn btn-sm btn-ghost"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fileInputRef.current?.click();
+                                        }}
+                                    >
+                                        <Upload size={14} />
+                                        Replace
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-ghost btn-danger"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeImage();
+                                        }}
+                                    >
+                                        <X size={14} />
+                                        Remove
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <div className="upload-placeholder">
-                                <Upload size={24} />
+                                <ImageIcon size={24} />
                                 <span>Drop image here or click to upload</span>
                                 <small>PNG, JPG up to 10MB</small>
                             </div>
                         )}
                     </div>
+                    {referenceImage && (
+                        <p className="input-hint">
+                            Reference image will guide the generation for better consistency
+                        </p>
+                    )}
                 </div>
 
                 {/* Visual Style Presets with Images */}
@@ -242,7 +301,10 @@ export function InputPanel() {
                             <motion.button
                                 key={preset.id}
                                 className={`visual-preset-card ${styleSettings.style === preset.id ? 'active' : ''}`}
-                                onClick={() => updateStyleSettings({ style: preset.id as StyleSettings['style'] })}
+                                onClick={() => {
+                                    pushToHistory('Change style');
+                                    updateStyleSettings({ style: preset.id as StyleSettings['style'] });
+                                }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -279,7 +341,10 @@ export function InputPanel() {
                                     <motion.button
                                         key={preset.id}
                                         className={`lighting-preset-card ${styleSettings.lightingType === preset.id ? 'active' : ''}`}
-                                        onClick={() => updateStyleSettings({ lightingType: preset.id })}
+                                        onClick={() => {
+                                            pushToHistory('Change lighting');
+                                            updateStyleSettings({ lightingType: preset.id });
+                                        }}
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                     >
@@ -315,7 +380,10 @@ export function InputPanel() {
                                     <motion.button
                                         key={palette.id}
                                         className={`palette-preset-card ${styleSettings.colorPalette === palette.id ? 'active' : ''}`}
-                                        onClick={() => updateStyleSettings({ colorPalette: palette.id as StyleSettings['colorPalette'] })}
+                                        onClick={() => {
+                                            pushToHistory('Change color palette');
+                                            updateStyleSettings({ colorPalette: palette.id as StyleSettings['colorPalette'] });
+                                        }}
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                     >
@@ -334,6 +402,6 @@ export function InputPanel() {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }

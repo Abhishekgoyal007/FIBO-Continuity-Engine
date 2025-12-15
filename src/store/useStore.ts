@@ -37,7 +37,7 @@ export interface Project {
   id: string;
   name: string;
   prompt: string;
-  referenceImage?: string; // Base64 data URL of uploaded reference image
+  referenceImage?: string;
   styleSettings: StyleSettings;
   shots: Shot[];
   baseJsonPrompt?: string;
@@ -52,6 +52,43 @@ export interface ConsistencyScore {
   lighting: number;
 }
 
+// History Entry for Undo/Redo
+export interface HistoryEntry {
+  id: string;
+  timestamp: Date;
+  action: string;
+  projectState: Project;
+}
+
+// Generation History Entry
+export interface GenerationHistoryEntry {
+  id: string;
+  timestamp: Date;
+  prompt: string;
+  shots: Array<{
+    name: string;
+    imageUrl: string;
+    cameraAngle: number;
+  }>;
+  styleSettings: StyleSettings;
+  consistencyScore?: ConsistencyScore;
+}
+
+// Prompt Preset
+export interface PromptPreset {
+  id: string;
+  name: string;
+  prompt: string;
+  styleSettings: StyleSettings;
+  createdAt: Date;
+}
+
+// Theme type
+export type Theme = 'dark' | 'light';
+
+// Export Format
+export type ExportFormat = 'png' | 'jpg' | 'webp';
+
 interface AppState {
   // Current Project
   currentProject: Project | null;
@@ -60,15 +97,39 @@ interface AppState {
   // Generation Settings
   settings: GenerationSettings;
 
+  // Theme
+  theme: Theme;
+
   // UI State
   isGenerating: boolean;
   currentGeneratingIndex: number;
+  generationProgress: number; // 0-100 percentage
+  generationStatus: string; // Human readable status message
   showSettings: boolean;
   showShotEditor: boolean;
+  showComparisonTool: boolean;
+  showHistory: boolean;
+  showPresets: boolean;
   editingShotId: string | null;
+  activeTab: 'input' | 'shots' | 'output'; // For mobile view
 
   // Consistency Analysis
   consistencyScore: ConsistencyScore | null;
+
+  // History for Undo/Redo
+  undoStack: HistoryEntry[];
+  redoStack: HistoryEntry[];
+  maxHistorySize: number;
+
+  // Generation History
+  generationHistory: GenerationHistoryEntry[];
+
+  // Prompt Presets
+  promptPresets: PromptPreset[];
+
+  // Export Settings
+  exportFormat: ExportFormat;
+  exportWithMetadata: boolean;
 
   // Toast notifications
   toasts: Array<{
@@ -89,6 +150,7 @@ interface AppState {
   removeShot: (id: string) => void;
   reorderShots: (startIndex: number, endIndex: number) => void;
   addShotsFromTemplate: (templateId: string) => void;
+  regenerateShot: (id: string) => void;
 
   // Style Actions
   updateStyleSettings: (settings: Partial<StyleSettings>) => void;
@@ -96,18 +158,50 @@ interface AppState {
   // Settings Actions
   updateSettings: (settings: Partial<GenerationSettings>) => void;
 
+  // Theme Actions
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
+
   // UI Actions
   setShowSettings: (show: boolean) => void;
   setShowShotEditor: (show: boolean) => void;
+  setShowComparisonTool: (show: boolean) => void;
+  setShowHistory: (show: boolean) => void;
+  setShowPresets: (show: boolean) => void;
   setEditingShotId: (id: string | null) => void;
+  setActiveTab: (tab: 'input' | 'shots' | 'output') => void;
 
   // Generation Actions
   setIsGenerating: (generating: boolean) => void;
   setCurrentGeneratingIndex: (index: number) => void;
+  setGenerationProgress: (progress: number, status?: string) => void;
+  setGenerationStatus: (status: string) => void;
   setBaseJsonPrompt: (prompt: string) => void;
 
   // Consistency
   setConsistencyScore: (score: ConsistencyScore | null) => void;
+
+  // History/Undo-Redo Actions
+  pushToHistory: (action: string) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+
+  // Generation History Actions
+  addToGenerationHistory: (entry: Omit<GenerationHistoryEntry, 'id' | 'timestamp'>) => void;
+  clearGenerationHistory: () => void;
+
+  // Prompt Preset Actions
+  savePromptPreset: (name: string) => void;
+  loadPromptPreset: (id: string) => void;
+  deletePromptPreset: (id: string) => void;
+  importPresets: (presets: PromptPreset[]) => void;
+  exportPresets: () => PromptPreset[];
+
+  // Export Actions
+  setExportFormat: (format: ExportFormat) => void;
+  setExportWithMetadata: (include: boolean) => void;
 
   // Toast Actions
   addToast: (type: 'success' | 'error' | 'info', message: string) => void;
@@ -175,13 +269,35 @@ export const useStore = create<AppState>()(
         imageSize: '1024x1024',
         qualitySteps: 50,
       },
+      theme: 'dark',
       isGenerating: false,
       currentGeneratingIndex: -1,
+      generationProgress: 0,
+      generationStatus: '',
       showSettings: false,
       showShotEditor: false,
+      showComparisonTool: false,
+      showHistory: false,
+      showPresets: false,
       editingShotId: null,
+      activeTab: 'input',
       consistencyScore: null,
       toasts: [],
+
+      // History state
+      undoStack: [],
+      redoStack: [],
+      maxHistorySize: 50,
+
+      // Generation history
+      generationHistory: [],
+
+      // Prompt presets
+      promptPresets: [],
+
+      // Export settings
+      exportFormat: 'png',
+      exportWithMetadata: true,
 
       // Project Actions
       createProject: (name, prompt) => {
@@ -319,6 +435,25 @@ export const useStore = create<AppState>()(
         });
       },
 
+      regenerateShot: (id) => {
+        set((state) => {
+          if (!state.currentProject) return state;
+          const updatedProject = {
+            ...state.currentProject,
+            shots: state.currentProject.shots.map((shot) =>
+              shot.id === id ? { ...shot, status: 'pending' as const, imageUrl: undefined, error: undefined } : shot
+            ),
+            updatedAt: new Date(),
+          };
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map((p) =>
+              p.id === updatedProject.id ? updatedProject : p
+            ),
+          };
+        });
+      },
+
       // Style Actions
       updateStyleSettings: (settings) => {
         set((state) => {
@@ -344,14 +479,38 @@ export const useStore = create<AppState>()(
         }));
       },
 
+      // Theme Actions
+      setTheme: (theme) => {
+        set({ theme });
+        document.documentElement.setAttribute('data-theme', theme);
+      },
+
+      toggleTheme: () => {
+        const newTheme = get().theme === 'dark' ? 'light' : 'dark';
+        get().setTheme(newTheme);
+      },
+
       // UI Actions
       setShowSettings: (show) => set({ showSettings: show }),
       setShowShotEditor: (show) => set({ showShotEditor: show }),
+      setShowComparisonTool: (show) => set({ showComparisonTool: show }),
+      setShowHistory: (show) => set({ showHistory: show }),
+      setShowPresets: (show) => set({ showPresets: show }),
       setEditingShotId: (id) => set({ editingShotId: id, showShotEditor: !!id }),
+      setActiveTab: (tab) => set({ activeTab: tab }),
 
       // Generation Actions
-      setIsGenerating: (generating) => set({ isGenerating: generating }),
+      setIsGenerating: (generating) => set({
+        isGenerating: generating,
+        generationProgress: generating ? 0 : 0,
+        generationStatus: generating ? 'Starting...' : ''
+      }),
       setCurrentGeneratingIndex: (index) => set({ currentGeneratingIndex: index }),
+      setGenerationProgress: (progress: number, status?: string) => set(state => ({
+        generationProgress: progress,
+        generationStatus: status || state.generationStatus
+      })),
+      setGenerationStatus: (status: string) => set({ generationStatus: status }),
       setBaseJsonPrompt: (prompt) => {
         set((state) => {
           if (!state.currentProject) return state;
@@ -366,6 +525,131 @@ export const useStore = create<AppState>()(
 
       // Consistency
       setConsistencyScore: (score) => set({ consistencyScore: score }),
+
+      // History/Undo-Redo Actions
+      pushToHistory: (action) => {
+        const state = get();
+        if (!state.currentProject) return;
+
+        const entry: HistoryEntry = {
+          id: generateId(),
+          timestamp: new Date(),
+          action,
+          projectState: JSON.parse(JSON.stringify(state.currentProject)),
+        };
+
+        set((s) => ({
+          undoStack: [...s.undoStack.slice(-s.maxHistorySize + 1), entry],
+          redoStack: [], // Clear redo stack on new action
+        }));
+      },
+
+      undo: () => {
+        const state = get();
+        if (state.undoStack.length === 0 || !state.currentProject) return;
+
+        const lastEntry = state.undoStack[state.undoStack.length - 1];
+        const currentEntry: HistoryEntry = {
+          id: generateId(),
+          timestamp: new Date(),
+          action: 'undo',
+          projectState: JSON.parse(JSON.stringify(state.currentProject)),
+        };
+
+        set({
+          undoStack: state.undoStack.slice(0, -1),
+          redoStack: [...state.redoStack, currentEntry],
+          currentProject: lastEntry.projectState,
+        });
+      },
+
+      redo: () => {
+        const state = get();
+        if (state.redoStack.length === 0) return;
+
+        const nextEntry = state.redoStack[state.redoStack.length - 1];
+        const currentEntry: HistoryEntry = {
+          id: generateId(),
+          timestamp: new Date(),
+          action: 'redo',
+          projectState: JSON.parse(JSON.stringify(state.currentProject!)),
+        };
+
+        set({
+          redoStack: state.redoStack.slice(0, -1),
+          undoStack: [...state.undoStack, currentEntry],
+          currentProject: nextEntry.projectState,
+        });
+      },
+
+      canUndo: () => get().undoStack.length > 0,
+      canRedo: () => get().redoStack.length > 0,
+
+      // Generation History Actions
+      addToGenerationHistory: (entry) => {
+        const newEntry: GenerationHistoryEntry = {
+          ...entry,
+          id: generateId(),
+          timestamp: new Date(),
+        };
+        set((state) => ({
+          generationHistory: [newEntry, ...state.generationHistory].slice(0, 100), // Keep last 100
+        }));
+      },
+
+      clearGenerationHistory: () => set({ generationHistory: [] }),
+
+      // Prompt Preset Actions
+      savePromptPreset: (name) => {
+        const state = get();
+        if (!state.currentProject) return;
+
+        const preset: PromptPreset = {
+          id: generateId(),
+          name,
+          prompt: state.currentProject.prompt,
+          styleSettings: state.currentProject.styleSettings,
+          createdAt: new Date(),
+        };
+
+        set((s) => ({
+          promptPresets: [...s.promptPresets, preset],
+        }));
+
+        state.addToast('success', `Preset "${name}" saved`);
+      },
+
+      loadPromptPreset: (id) => {
+        const state = get();
+        const preset = state.promptPresets.find((p) => p.id === id);
+        if (!preset || !state.currentProject) return;
+
+        state.updateProject({
+          prompt: preset.prompt,
+          styleSettings: preset.styleSettings,
+        });
+
+        state.addToast('success', `Loaded preset "${preset.name}"`);
+      },
+
+      deletePromptPreset: (id) => {
+        set((state) => ({
+          promptPresets: state.promptPresets.filter((p) => p.id !== id),
+        }));
+      },
+
+      importPresets: (presets) => {
+        set((state) => ({
+          promptPresets: [...state.promptPresets, ...presets],
+        }));
+        get().addToast('success', `Imported ${presets.length} presets`);
+      },
+
+      exportPresets: () => get().promptPresets,
+
+      // Export Actions
+      setExportFormat: (format) => set({ exportFormat: format }),
+      setExportWithMetadata: (include) => set({ exportWithMetadata: include }),
 
       // Toast Actions
       addToast: (type, message) => {
@@ -387,6 +671,11 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({
         projects: state.projects,
         settings: state.settings,
+        theme: state.theme,
+        promptPresets: state.promptPresets,
+        generationHistory: state.generationHistory.slice(0, 20), // Only persist last 20
+        exportFormat: state.exportFormat,
+        exportWithMetadata: state.exportWithMetadata,
       }),
     }
   )

@@ -1,0 +1,82 @@
+/* Theme Toggle Styles */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.theme-toggle-track {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 2px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-track {
+    border-color: var(--border-hover);
+}
+
+.theme-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    z-index: 2;
+}
+
+.theme-icons {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    pointer-events: none;
+}
+
+.theme-icons svg {
+    color: var(--text-muted);
+    transition: color 0.2s ease, opacity 0.2s ease;
+    opacity: 0.5;
+}
+
+.theme-icons svg.active {
+    color: var(--text-primary);
+    opacity: 0;
+}
+
+/* Hover effects */
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-full);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .theme-toggle-track {
+        width: 42px;
+        height: 24px;
+    }
+
+    .theme-toggle-thumb {
+        width: 18px;
+        height: 18px;
+    }
+}

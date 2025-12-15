@@ -48,23 +48,60 @@ const DEMO_IMAGES = [
 const getCameraAngleInstruction = (angle: number): string => {
     const normalizedAngle = ((angle % 360) + 360) % 360;
 
-    // Very precise angle descriptions for FIBO consistency
-    if (normalizedAngle === 0) return 'straight front view, camera directly in front, subject facing camera';
-    if (normalizedAngle <= 15 || normalizedAngle >= 345) return 'front view, facing the camera directly, slight angle';
-    if (normalizedAngle >= 15 && normalizedAngle < 45) return 'front three-quarter view, 30 degrees from front left';
-    if (normalizedAngle >= 45 && normalizedAngle < 60) return 'three-quarter view from left, 45 degree angle';
-    if (normalizedAngle >= 60 && normalizedAngle < 90) return 'strong three-quarter left view, approaching side profile';
-    if (normalizedAngle >= 90 && normalizedAngle < 120) return 'left side profile view, 90 degrees, exact side angle';
-    if (normalizedAngle >= 120 && normalizedAngle < 150) return 'rear three-quarter view from left, 135 degrees';
-    if (normalizedAngle >= 150 && normalizedAngle < 180) return 'approaching back view from left, 160 degrees';
-    if (normalizedAngle >= 180 && normalizedAngle < 195) return 'back view, camera behind subject, 180 degrees';
-    if (normalizedAngle >= 195 && normalizedAngle < 225) return 'approaching back view from right, 200 degrees';
-    if (normalizedAngle >= 225 && normalizedAngle < 270) return 'rear three-quarter view from right, 225 degrees';
-    if (normalizedAngle >= 270 && normalizedAngle < 300) return 'right side profile view, 270 degrees, exact side angle';
-    if (normalizedAngle >= 300 && normalizedAngle < 330) return 'three-quarter view from right, 315 degrees';
-    if (normalizedAngle >= 330 && normalizedAngle < 345) return 'front three-quarter view from right, 340 degrees';
+    // ULTRA-PRECISE angle descriptions with explicit rotation degrees
+    // Format: explicit degree + turntable reference + detailed view description
+    if (normalizedAngle === 0) {
+        return 'EXACT FRONT VIEW at precisely 0 degrees rotation, camera positioned directly in front of subject, subject facing directly toward camera, looking straight at viewer, perfect frontal symmetry';
+    }
+    if (normalizedAngle === 45) {
+        return 'THREE-QUARTER FRONT VIEW at exactly 45 degrees rotation clockwise, camera positioned between front and left side, classic 3/4 portrait angle, subject turned 45 degrees to their right';
+    }
+    if (normalizedAngle === 90) {
+        return 'EXACT LEFT PROFILE at precisely 90 degrees rotation, perfect side view, camera positioned at exact left side of subject, showing only left side of face/body, nose pointing left in frame';
+    }
+    if (normalizedAngle === 135) {
+        return 'THREE-QUARTER BACK VIEW from left at 135 degrees rotation, camera positioned between left side and back, showing back of head/body with partial left profile visible';
+    }
+    if (normalizedAngle === 180) {
+        return 'EXACT BACK VIEW at precisely 180 degrees rotation, camera positioned directly behind subject, showing only the back of head/body, subject facing away from camera';
+    }
+    if (normalizedAngle === 225) {
+        return 'THREE-QUARTER BACK VIEW from right at 225 degrees rotation, camera positioned between back and right side, showing back with partial right profile visible';
+    }
+    if (normalizedAngle === 270) {
+        return 'EXACT RIGHT PROFILE at precisely 270 degrees rotation, perfect side view, camera positioned at exact right side of subject, showing only right side of face/body, nose pointing right in frame';
+    }
+    if (normalizedAngle === 315) {
+        return 'THREE-QUARTER FRONT VIEW from right at 315 degrees rotation, camera positioned between right side and front, classic 3/4 portrait from right side';
+    }
 
-    return 'front view, facing camera';
+    // For non-standard angles, provide interpolated precise description
+    if (normalizedAngle > 0 && normalizedAngle < 45) {
+        return `SLIGHT LEFT ROTATION at ${normalizedAngle} degrees from front, mostly frontal with subtle left turn`;
+    }
+    if (normalizedAngle > 45 && normalizedAngle < 90) {
+        return `STRONG THREE-QUARTER LEFT at ${normalizedAngle} degrees, between 3/4 view and side profile`;
+    }
+    if (normalizedAngle > 90 && normalizedAngle < 135) {
+        return `REAR LEFT OBLIQUE at ${normalizedAngle} degrees, past side profile toward back`;
+    }
+    if (normalizedAngle > 135 && normalizedAngle < 180) {
+        return `APPROACHING BACK VIEW from left at ${normalizedAngle} degrees, nearly full back view`;
+    }
+    if (normalizedAngle > 180 && normalizedAngle < 225) {
+        return `APPROACHING BACK VIEW from right at ${normalizedAngle} degrees, nearly full back view`;
+    }
+    if (normalizedAngle > 225 && normalizedAngle < 270) {
+        return `REAR RIGHT OBLIQUE at ${normalizedAngle} degrees, past right profile toward front`;
+    }
+    if (normalizedAngle > 270 && normalizedAngle < 315) {
+        return `STRONG THREE-QUARTER RIGHT at ${normalizedAngle} degrees, between side profile and 3/4 front`;
+    }
+    if (normalizedAngle > 315 && normalizedAngle < 360) {
+        return `SLIGHT RIGHT ROTATION at ${normalizedAngle} degrees from front, mostly frontal with subtle right turn`;
+    }
+
+    return 'FRONT VIEW at 0 degrees, subject facing camera directly';
 };
 
 const getCameraHeightInstruction = (height: number): string => {
@@ -163,22 +200,38 @@ const getEnhancedNegativePrompt = (style: StyleSettings['style']): string => {
         'floating limbs', 'disconnected limbs', 'long neck', 'elongated body'
     ];
 
-    // Consistency-focused negatives (prevent variations between frames)
+    // ULTRA-STRICT Consistency-focused negatives (prevent ANY variations between frames)
     const consistencyNegatives = [
-        'different character', 'inconsistent design', 'changed appearance',
-        'different face', 'different eyes', 'different hair', 'different clothes',
-        'changed colors', 'different style', 'different lighting',
-        'modified pose', 'different body proportions', 'altered features',
-        'asymmetrical eyes', 'uneven features', 'inconsistent details'
+        // Character changes
+        'different character', 'different person', 'changed identity',
+        'different face shape', 'different facial features', 'different expression',
+        'different eyes', 'different eye color', 'different eye shape',
+        'different nose', 'different mouth', 'different lips',
+        'different skin tone', 'different age appearance',
+        // Hair changes
+        'different hair', 'changed hairstyle', 'different hair color', 'different hair length',
+        // Clothing changes  
+        'different clothes', 'changed outfit', 'different clothing color',
+        'different accessories', 'missing accessories', 'extra accessories',
+        // Body changes
+        'different body proportions', 'different body type', 'different height',
+        'different musculature', 'different build',
+        // Style/lighting changes
+        'different art style', 'changed colors', 'different color palette',
+        'different lighting', 'different shadow direction', 'different background',
+        // Pose changes (unless camera angle change)
+        'different arm positions', 'different leg positions', 'different stance',
+        // Wrong camera angle
+        'wrong angle', 'incorrect viewpoint', 'misaligned camera'
     ];
 
     const styleSpecificNegatives: Record<string, string[]> = {
-        photorealistic: ['cartoon', 'anime', 'painting', 'illustration', 'CGI', 'fake', 'plastic skin'],
-        cinematic: ['amateur', 'home video', 'phone camera', 'snapshot', 'overexposed', 'underexposed'],
-        anime: ['photorealistic', 'photograph', '3D render', 'realistic', 'western cartoon'],
-        concept: ['photograph', 'amateur art', 'MS Paint', 'low effort'],
-        '3d': ['2D', 'flat', 'hand drawn', 'sketch', 'painting'],
-        product: ['cluttered background', 'distracting elements', 'unprofessional', 'amateur lighting']
+        photorealistic: ['cartoon', 'anime', 'painting', 'illustration', 'CGI', 'fake', 'plastic skin', 'airbrushed'],
+        cinematic: ['amateur', 'home video', 'phone camera', 'snapshot', 'overexposed', 'underexposed', 'flat lighting'],
+        anime: ['photorealistic', 'photograph', '3D render', 'realistic', 'western cartoon', 'realistic skin texture'],
+        concept: ['photograph', 'amateur art', 'MS Paint', 'low effort', 'rough sketch'],
+        '3d': ['2D', 'flat', 'hand drawn', 'sketch', 'painting', 'cel shaded'],
+        product: ['cluttered background', 'distracting elements', 'unprofessional', 'amateur lighting', 'harsh shadows']
     };
 
     const styleNegs = styleSpecificNegatives[style] || [];
@@ -195,8 +248,8 @@ export const buildBasePrompt = (
 ): string => {
     const parts: string[] = [];
 
-    // Core subject description
-    parts.push(baseDescription.trim());
+    // Core subject description with fixed identity
+    parts.push(`[SUBJECT] ${baseDescription.trim()}`);
 
     // Enhanced style modifiers
     parts.push(getStyleEnhancement(styleSettings.style));
@@ -213,11 +266,17 @@ export const buildBasePrompt = (
     parts.push('masterpiece quality');
     parts.push('award-winning');
     parts.push('highly detailed');
+    parts.push('sharp focus');
+    parts.push('high resolution 8K');
 
-    // Consistency modifiers (critical for multi-frame)
-    parts.push('consistent character design');
-    parts.push('fixed proportions');
-    parts.push('symmetrical features');
+    // STRONG Consistency modifiers (critical for multi-frame turnaround)
+    parts.push('[CONSISTENCY] fixed character identity');
+    parts.push('exact same face across all angles');
+    parts.push('consistent body proportions');
+    parts.push('identical clothing design');
+    parts.push('same color palette throughout');
+    parts.push('uniform lighting setup');
+    parts.push('suitable for character turnaround sheet');
 
     return parts.filter(Boolean).join(', ');
 };
@@ -402,6 +461,17 @@ export class FiboAPI {
 
             // v2 API returns { result: { image_url, seed, structured_prompt }, request_id }
             if (data.result) {
+                // Log structured_prompt for debugging
+                if (data.result.structured_prompt) {
+                    console.log('[BRIA API] ✓ Got structured_prompt:',
+                        typeof data.result.structured_prompt === 'string'
+                            ? data.result.structured_prompt.substring(0, 200) + '...'
+                            : JSON.stringify(data.result.structured_prompt).substring(0, 200) + '...'
+                    );
+                } else {
+                    console.log('[BRIA API] ⚠ No structured_prompt in response');
+                }
+
                 return {
                     images: [{
                         url: data.result.image_url,
@@ -504,31 +574,71 @@ export class FiboAPI {
                         console.log('[FIBO] ✓ Got structured_prompt, will use for maximum consistency');
                     }
                 } else {
-                    // SUBSEQUENT SHOTS: Use structured_prompt + ULTRA-STRICT camera refinement
-                    const cameraInstruction = buildCameraInstruction(shot);
-
-                    // Enhanced refinement prompt with strict consistency language
-                    const refinementPrompt = [
-                        `Camera rotation only: ${cameraInstruction}`,
-                        'CRITICAL: Keep EXACTLY the same character/subject',
-                        'Same face, same eyes, same body proportions',
-                        'Same clothing, same colors, same materials',
-                        'Same pose (standing), same arm positions',
-                        'Same lighting setup, same background',
-                        'Only the camera angle changes, nothing else'
-                    ].join('. ');
-
+                    // SUBSEQUENT SHOTS: Modify structured_prompt JSON to change camera angle
                     console.log(`[FIBO] Shot ${i + 1}/${shots.length}: ${shot.name}`);
-                    console.log(`[FIBO] Camera: ${shot.cameraAngle}°, Height: ${shot.cameraHeight}°`);
+                    console.log(`[FIBO] Camera angle: ${shot.cameraAngle}°`);
 
                     if (baseStructuredPrompt) {
-                        // Use the base structured prompt with strict camera angle refinement
-                        result = await this.generate(refinementPrompt, seed, baseStructuredPrompt, negativePrompt);
+                        // Parse and modify the structured_prompt JSON to update camera angle
+                        let modifiedStructuredPrompt = baseStructuredPrompt;
+
+                        try {
+                            // If it's a JSON string, parse it
+                            const structuredJson = typeof baseStructuredPrompt === 'string'
+                                ? JSON.parse(baseStructuredPrompt)
+                                : baseStructuredPrompt;
+
+                            // Update camera angle in the structured prompt
+                            if (structuredJson) {
+                                // Common FIBO structured prompt fields for camera
+                                structuredJson.camera_angle = shot.cameraAngle;
+                                structuredJson.camera = structuredJson.camera || {};
+                                structuredJson.camera.angle = shot.cameraAngle;
+                                structuredJson.camera.horizontal_angle = shot.cameraAngle;
+
+                                // Map angle to descriptive text
+                                const angleDescriptions: Record<number, string> = {
+                                    0: 'front view',
+                                    45: 'three-quarter front left view',
+                                    90: 'side profile left view',
+                                    135: 'three-quarter back left view',
+                                    180: 'back view',
+                                    225: 'three-quarter back right view',
+                                    270: 'side profile right view',
+                                    315: 'three-quarter front right view'
+                                };
+
+                                // Find closest angle description
+                                const closestAngle = Object.keys(angleDescriptions)
+                                    .map(Number)
+                                    .reduce((prev, curr) =>
+                                        Math.abs(curr - shot.cameraAngle) < Math.abs(prev - shot.cameraAngle) ? curr : prev
+                                    );
+
+                                structuredJson.camera.view = angleDescriptions[closestAngle] || `${shot.cameraAngle} degree view`;
+                                structuredJson.camera.height = shot.cameraHeight;
+                                structuredJson.camera.fov = shot.fov;
+
+                                modifiedStructuredPrompt = JSON.stringify(structuredJson);
+                                console.log('[FIBO] Modified structured_prompt with camera angle:', shot.cameraAngle);
+                            }
+                        } catch (e) {
+                            console.log('[FIBO] structured_prompt is not JSON, using as refinement');
+                        }
+
+                        // Generate with modified structured prompt - minimal text prompt
+                        const cameraInstruction = buildCameraInstruction(shot);
+                        result = await this.generate(
+                            `${cameraInstruction}. Keep exactly the same character identity.`,
+                            seed,
+                            modifiedStructuredPrompt,
+                            negativePrompt
+                        );
                     } else {
                         // Fallback: use full prompt with consistency modifiers
                         console.log('[FIBO] Warning: No structured_prompt, using full prompt fallback');
                         const fullPrompt = buildShotPrompt(baseDescription, shot, styleSettings) +
-                            ', same character, identical design, consistent appearance';
+                            ', same character, identical design, consistent appearance, do not change any features';
                         result = await this.generate(fullPrompt, seed, undefined, negativePrompt);
                     }
                 }

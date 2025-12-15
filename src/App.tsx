@@ -10,6 +10,11 @@ import { SettingsModal } from './components/SettingsModal';
 import { ShotEditorModal } from './components/ShotEditorModal';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { Toast } from './components/Toast';
+import { MobileNav } from './components/MobileNav';
+import { HistoryModal } from './components/HistoryModal';
+import { PresetsModal } from './components/PresetsModal';
+import { ComparisonTool } from './components/ComparisonTool';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import './App.css';
 
 function App() {
@@ -17,13 +22,43 @@ function App() {
     currentProject,
     showSettings,
     showShotEditor,
+    showHistory,
+    showPresets,
+    showComparisonTool,
     toasts,
-    createProject
+    createProject,
+    theme,
+    activeTab
   } = useStore();
 
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts();
+
+  // URL-based routing: check current path
+  const getInitialView = (): 'landing' | 'app' => {
+    const path = window.location.pathname;
+    return path === '/app' ? 'app' : 'landing';
+  };
+
   // View state: 'landing' or 'app'
-  const [view, setView] = useState<'landing' | 'app'>('landing');
+  const [view, setView] = useState<'landing' | 'app'>(getInitialView);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      setView(path === '/app' ? 'app' : 'landing');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Check if first visit
   useEffect(() => {
@@ -41,6 +76,8 @@ function App() {
   }, [currentProject, createProject]);
 
   const handleEnterApp = () => {
+    // Update URL without page reload
+    window.history.pushState({}, '', '/app');
     setView('app');
     // Show onboarding on first visit
     const hasVisited = localStorage.getItem('fibo_visited');
@@ -59,6 +96,11 @@ function App() {
     return <LandingPage onEnterApp={handleEnterApp} />;
   }
 
+  // Determine which panel is active (for mobile)
+  const getPanelClassName = (panelType: 'input' | 'shots' | 'output') => {
+    return `panel panel-${panelType} ${activeTab === panelType ? 'active' : ''}`;
+  };
+
   // Show main app
   return (
     <div className="app">
@@ -74,14 +116,23 @@ function App() {
       {/* Main Content */}
       <main className="app-main">
         {/* Left Panel: Input & Configuration */}
-        <InputPanel />
+        <section className={getPanelClassName('input')}>
+          <InputPanel />
+        </section>
 
         {/* Center Panel: Shot Planner */}
-        <ShotPlanner />
+        <section className={getPanelClassName('shots')}>
+          <ShotPlanner />
+        </section>
 
         {/* Right Panel: Output Gallery */}
-        <OutputGallery />
+        <section className={getPanelClassName('output')}>
+          <OutputGallery />
+        </section>
       </main>
+
+      {/* Mobile Navigation */}
+      <MobileNav />
 
       {/* Settings Modal */}
       <AnimatePresence>
@@ -91,6 +142,21 @@ function App() {
       {/* Shot Editor Modal */}
       <AnimatePresence>
         {showShotEditor && <ShotEditorModal />}
+      </AnimatePresence>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistory && <HistoryModal />}
+      </AnimatePresence>
+
+      {/* Presets Modal */}
+      <AnimatePresence>
+        {showPresets && <PresetsModal />}
+      </AnimatePresence>
+
+      {/* Comparison Tool */}
+      <AnimatePresence>
+        {showComparisonTool && <ComparisonTool />}
       </AnimatePresence>
 
       {/* Onboarding Tutorial */}
