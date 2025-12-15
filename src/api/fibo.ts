@@ -636,21 +636,23 @@ export class FiboAPI {
                         // Add VERY STRONG emphasis for back view angles (135-225 degrees)
                         const normalizedAngle = ((shot.cameraAngle % 360) + 360) % 360;
                         if (normalizedAngle >= 135 && normalizedAngle <= 225) {
-                            shotPrompt = `CRITICAL: BACK VIEW ONLY. Show the BACK of the character, NOT the front. Subject facing AWAY from camera. ${cameraInstruction}. The camera is BEHIND the subject. Do NOT show the face. Show only the back of the head and body.`;
+                            // CRITICAL: Emphasize clothing consistency - no exposed skin, same closed outfit
+                            shotPrompt = `CRITICAL: BACK VIEW ONLY. Show the BACK of the character, NOT the front. Subject facing AWAY from camera. ${cameraInstruction}. The camera is BEHIND the subject. Do NOT show the face. Show only the back of the head and body. IMPORTANT: Keep the EXACT SAME CLOTHING from behind - fully closed outfit, no exposed skin on back, same fabric and design covering the entire back, identical outfit just viewed from behind.`;
                         } else if (normalizedAngle >= 60 && normalizedAngle <= 120) {
-                            shotPrompt = `SIDE PROFILE VIEW. ${cameraInstruction}. Subject facing sideways, not toward camera.`;
+                            shotPrompt = `SIDE PROFILE VIEW. ${cameraInstruction}. Subject facing sideways, not toward camera. Same clothing visible from the side.`;
                         } else if (normalizedAngle >= 240 && normalizedAngle <= 300) {
-                            shotPrompt = `SIDE PROFILE VIEW from right. ${cameraInstruction}. Subject facing sideways, not toward camera.`;
+                            shotPrompt = `SIDE PROFILE VIEW from right. ${cameraInstruction}. Subject facing sideways, not toward camera. Same clothing visible from the side.`;
                         }
 
                         // Add angle-specific negative prompts for stronger effect
                         let angleNegativePrompt = negativePrompt;
                         if (normalizedAngle >= 135 && normalizedAngle <= 225) {
-                            angleNegativePrompt = `front view, face visible, eyes visible, looking at camera, facing camera, frontal view, ${negativePrompt}`;
+                            // Add clothing-related negatives to prevent backless/exposed designs
+                            angleNegativePrompt = `front view, face visible, eyes visible, looking at camera, facing camera, frontal view, backless, open back, exposed back, bare back, skin showing on back, backless dress, backless top, cutout, revealing back, undressed, naked back, ${negativePrompt}`;
                         }
 
                         result = await this.generate(
-                            `${shotPrompt}. Keep exactly the same character identity, clothing, and style.`,
+                            `${shotPrompt}. Keep exactly the same character identity, clothing design, and style. The outfit must be identical - same fabric, same coverage, no modifications.`,
                             seed,
                             modifiedStructuredPrompt,
                             angleNegativePrompt
