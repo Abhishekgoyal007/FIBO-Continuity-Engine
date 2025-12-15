@@ -7,8 +7,7 @@ import {
     Pause,
     SkipForward,
     SkipBack,
-    Grid,
-    Maximize2
+    Grid
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import './ComparisonTool.css';

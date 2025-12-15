@@ -18,7 +18,6 @@ export function DecryptedText({
     speed = 50,
     className = '',
     encrypted = true,
-    revealDirection = 'start',
     onComplete
 }: DecryptedTextProps) {
     const [displayText, setDisplayText] = useState(encrypted ? scrambleText(text) : text);
@@ -45,7 +44,7 @@ export function DecryptedText({
             const textLength = text.length;
 
             intervalRef.current = setInterval(() => {
-                setDisplayText(prev => {
+                setDisplayText(() => {
                     const revealed = text.slice(0, currentIndex + 1);
                     const scrambled = scrambleText(text.slice(currentIndex + 1));
                     return revealed + scrambled;

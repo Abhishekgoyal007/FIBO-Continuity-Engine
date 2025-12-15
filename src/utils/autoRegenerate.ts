@@ -6,7 +6,7 @@
  * triggers targeted regeneration with adjusted parameters.
  */
 
-import { validateSequenceConsistency, analyzeImage } from './consistency';
+import { analyzeImage } from './consistency';
 import type { FiboResult } from '../api/fibo';
 
 export interface RegenerationResult {
@@ -23,11 +23,6 @@ export interface RegenerationConfig {
     onProgress?: (message: string) => void;
     onShotRegenerated?: (index: number, result: FiboResult) => void;
 }
-
-const DEFAULT_CONFIG: RegenerationConfig = {
-    minConsistencyScore: 70,
-    maxAttempts: 2,
-};
 
 /**
  * Identify which shots have consistency issues compared to the sequence

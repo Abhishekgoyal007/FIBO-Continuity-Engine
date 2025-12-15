@@ -12,10 +12,10 @@ export function BlurText({ text, delay = 0, className = '' }: BlurTextProps) {
 
     const container = {
         hidden: { opacity: 0 },
-        visible: (i = 1) => ({
+        visible: {
             opacity: 1,
             transition: { staggerChildren: 0.08, delayChildren: delay }
-        })
+        }
     };
 
     const child = {
@@ -24,7 +24,7 @@ export function BlurText({ text, delay = 0, className = '' }: BlurTextProps) {
             filter: 'blur(0px)',
             y: 0,
             transition: {
-                type: 'spring',
+                type: 'spring' as const,
                 damping: 12,
                 stiffness: 100
             }
