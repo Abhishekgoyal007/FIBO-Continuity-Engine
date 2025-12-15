@@ -1,66 +1,103 @@
 # 🎬 FIBO Continuity Engine
 
-> **One-Click Perfectly Consistent Multi-Frame Generator**
+> **AI-Powered Multi-Frame Consistency for Characters, Products & Storyboards**
 
-Built for the [FIBO Hackathon](https://fibo-hackathon.devpost.com/) by Bria AI.
+Built for the [BRIA FIBO Hackathon](https://bria-ai.devpost.com/) 
 
-![FIBO Continuity Engine](./preview.png)
+🔗 **[Live Demo](https://fibo-continuity-engine.vercel.app)** | 📽️ **[Demo Video](#)** | 🐙 **[GitHub](https://github.com/Abhishekgoyal007/FIBO-Continuity-Engine)**
+
+![FIBO Continuity Engine](./public/sample-1.jpg)
+
+---
 
 ## 🎯 The Problem
 
-Every professional studio struggles with this challenge:
+Every professional creative studio struggles with this challenge:
 
-> *"How do we generate 5–20 shots of the SAME character/environment/product, with the exact same look, style, lighting, textures, proportions, and color?"*
+> *"How do we generate 5–20 shots of the SAME character with the exact same look, proportions, colors, and style from different camera angles?"*
 
-Traditional AI models fail at this because they can't maintain consistency across multiple frames. Each generation introduces drift in character appearance, lighting direction, color palette, and proportions.
+Traditional AI models fail because each generation introduces **drift** in appearance, lighting, and proportions. This makes them unusable for:
+- Game character turnarounds
+- Product 360° views
+- Animation storyboards
+- Marketing asset consistency
 
-## 💡 The Solution
+---
 
-**FIBO Continuity Engine** leverages FIBO's unique JSON-native capabilities to solve multi-frame consistency:
+## 💡 Our Solution: FIBO Continuity Engine
 
-- **JSON-Native Control**: 1,000+ word structured prompts with deterministic parameters
-- **Disentangled Generation**: Change camera angles WITHOUT affecting character/scene consistency  
-- **Iterative Refinement**: Keep base prompt constant, only modify camera/composition
-- **Automated Validation**: Color histogram & structural analysis to catch drift
+We leverage **BRIA FIBO's unique capabilities** to solve multi-frame consistency:
 
-## ✨ Features
+### 🔑 How We Use BRIA FIBO
 
-### 🎥 Shot Planner
-- Pre-built shot templates:
-  - **Character Turnaround** (5 shots: Front, 45°, Side, 135°, Back)
-  - **Product 360°** (8 shots at 45° intervals)
-  - **Storyboard Sequence** (6 cinematic shots)
-  - **Expression Sheet** (9 emotional expressions)
-- Custom camera angle, FOV, and composition controls
-- Lighting direction and color palette management
+| FIBO Feature | Our Implementation |
+|--------------|-------------------|
+| **Structured Prompts** | Capture character DNA from first generation, reuse for all subsequent shots |
+| **Camera Angle Control** | Precise degree-based rotation (0°, 45°, 90°, 135°, 180°, etc.) |
+| **Lighting Control** | Consistent lighting direction across all frames |
+| **Color Palette** | Locked color schemes for visual consistency |
+| **Disentangled Generation** | Change ONLY camera angle, keep everything else identical |
+| **Seed Locking** | Same seed ensures deterministic, reproducible results |
 
-### 🔄 Sequence Generator
-- Generate 6-20 consistent frames from a single character/scene description
-- Automatic JSON parameter injection for each shot
-- Batch processing with real-time progress tracking
+### 🧠 Technical Integration
 
-### ✅ Consistency Validator
+```typescript
+// First shot: Generate with full prompt, get structured_prompt back
+const firstShot = await fibo.generate(fullPrompt, seed);
+const structuredPrompt = firstShot.structured_prompt; // Character DNA
+
+// Subsequent shots: Modify ONLY camera angle in structured_prompt
+for (const shot of remainingShots) {
+    structuredPrompt.camera.angle = shot.cameraAngle;
+    const result = await fibo.generate(cameraInstruction, seed, structuredPrompt);
+}
+```
+
+---
+
+## ✨ Key Features
+
+### 🎥 Shot Planner with Templates
+- **Character Turnaround** (5 shots: Front, 45°, Side, 135°, Back)
+- **Product 360°** (8 shots at 45° intervals)
+- **Storyboard Sequence** (6 cinematic compositions)
+- **Expression Sheet** (9 emotional expressions)
+
+### 📐 Precise Camera Controls
+- Horizontal angle: 0° to 360° rotation
+- Vertical angle: Bird's eye to worm's eye
+- Field of View: Wide (24mm) to Telephoto (85mm)
+
+### 🎨 Style Presets
+- Visual styles: Photorealistic, Cinematic, Anime, Concept Art, 3D Render, Product
+- Lighting: Studio, Natural, Dramatic, Rembrandt, Backlit
+- Color palettes: Warm, Cool, Vibrant, Muted, Monochrome
+
+### ✅ Consistency Analysis
 - Real-time color histogram comparison
-- Silhouette/structure analysis
-- Auto-regeneration for frames that break consistency
+- Brightness and contrast matching
+- Production-ready score indicator
 
 ### 📦 Export Options
-- Download individual frames (PNG)
-- Export complete sequence as ZIP
-- Full-size lightbox preview
+- Individual frames (PNG/JPEG/WebP)
+- Complete sequence as ZIP
+- Animated GIF preview
+- Full-resolution download
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ installed
-- Fal.ai API key ([Get one free here](https://fal.ai/dashboard/keys))
+- Node.js 18+
+- BRIA API Key ([Get one here](https://bria.ai))
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fibo-continuity-engine.git
-cd fibo-continuity-engine
+git clone https://github.com/Abhishekgoyal007/FIBO-Continuity-Engine.git
+cd FIBO-Continuity-Engine
 
 # Install dependencies
 npm install
@@ -71,68 +108,87 @@ npm run dev
 
 ### Usage
 
-1. **Enter your API key** in Settings (gear icon)
-2. **Describe your character/scene** in the left panel
-3. **Choose a shot template** or add custom shots
-4. **Click "Generate Sequence"** and watch the magic happen!
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **State Management**: Zustand
-- **Animations**: Framer Motion
-- **API Integration**: @fal-ai/client
-- **Export**: JSZip + FileSaver
-
-## 🎯 Hackathon Categories
-
-This project targets:
-- **Best Overall** - Showcasing JSON-native control and professional parameters
-- **Best New User Experience or Professional Tool** - Production-ready workflow for studios
-
-## 📸 Screenshots
-
-### Main Interface
-The three-panel layout provides intuitive workflow:
-- **Left**: Character/Scene description and style settings
-- **Center**: Shot planner with templates and custom shots
-- **Right**: Generated sequence gallery with export options
-
-### Shot Templates
-Quick-start with professional shot configurations:
-- Character Turnaround for game dev & animation
-- Product 360° for e-commerce
-- Storyboard Sequence for film/video
-- Expression Sheet for character design
-
-## 🔧 Configuration
-
-### API Providers
-| Provider | Status | Notes |
-|----------|--------|-------|
-| Fal.ai | ✅ Supported | Recommended - Fast & reliable |
-| Replicate | 🔄 Planned | Coming soon |
-| Bria Platform | 🔄 Planned | Direct integration |
-| Local Inference | 🔄 Planned | Requires GPU |
-
-### Camera Presets
-| Preset | Angle | FOV | Description |
-|--------|-------|-----|-------------|
-| Front | 0° | 50mm | Standard front view |
-| Side | 90° | 50mm | Profile view |
-| 45° | 45° | 50mm | Three-quarter view |
-| Back | 180° | 50mm | Rear view |
-| Close-up | 0° | 85mm | Detail shot |
-| Low Angle | 0° (-20° height) | 35mm | Heroic shot |
-| High Angle | 0° (+20° height) | 35mm | Overview shot |
-
-## 📄 License
-
-MIT License - Built for FIBO Hackathon 2025
+1. **Enter API key** in Settings (⚙️ icon)
+2. **Describe your subject** (character, product, scene)
+3. **Choose a shot template** or customize angles
+4. **Click "Generate"** and watch consistent frames appear!
 
 ---
 
-**Made with ❤️ for the FIBO Hackathon**
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **React 18 + TypeScript** | Frontend framework |
+| **Vite** | Fast build tool |
+| **Zustand** | State management |
+| **Framer Motion** | Smooth animations |
+| **BRIA FIBO API** | AI image generation |
+| **JSZip + FileSaver** | Export functionality |
+
+---
+
+## 🏆 Hackathon Category
+
+### **Best New User Experience or Professional Tool** 🎯
+
+This project demonstrates:
+- ✅ **Practical production application** for real creative workflows
+- ✅ **Pro-grade controls** (camera angle, FOV, lighting, color palette)
+- ✅ **Disentanglement** to change view without affecting identity
+- ✅ **Professional UI/UX** designed for studio pipelines
+
+### FIBO Features Showcased:
+1. **Structured Prompts** - JSON-native generation control
+2. **Camera Parameters** - Precise angle control
+3. **Seed Locking** - Deterministic generation
+4. **Iterative Refinement** - Modify single parameters while keeping others fixed
+
+---
+
+## 📸 Screenshots
+
+### Landing Page
+Premium design with animated hero section showcasing real FIBO-generated images.
+
+### Main Application
+Three-panel workflow:
+- **Left**: Subject description + style settings
+- **Center**: Shot planner with templates
+- **Right**: Generated gallery with export
+
+### Consistency Analysis
+Real-time scoring with color histogram comparison.
+
+---
+
+## 🔮 Future Roadmap
+
+- [ ] Reference image upload for image-to-image generation
+- [ ] Batch export with custom naming
+- [ ] Animation timeline editor
+- [ ] Cloud project saving
+- [ ] Team collaboration features
+
+---
+
+## 👨‍💻 Author
+
+**Abhishek Goyal**
+- GitHub: [@Abhishekgoyal007](https://github.com/Abhishekgoyal007)
+
+---
+
+## 📄 License
+
+MIT License - Built for BRIA FIBO Hackathon 2025
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the BRIA FIBO Hackathon**
 
 *Powered by [BRIA FIBO](https://huggingface.co/briaai/FIBO) - The first JSON-native text-to-image model*
+
+</div>
