@@ -34,15 +34,15 @@ function App() {
   // Enable keyboard shortcuts
   useKeyboardShortcuts();
 
-  // URL-based routing: check current path
-  const getInitialView = (): 'landing' | 'app' => {
-    const path = window.location.pathname;
-    return path === '/app' ? 'app' : 'landing';
-  };
-
-  // View state: 'landing' or 'app'
-  const [view, setView] = useState<'landing' | 'app'>(getInitialView);
+  // View state: 'landing' or 'app' - initialized to null to prevent hydration mismatch
+  const [view, setView] = useState<'landing' | 'app' | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Sync view with URL on mount (client-side only)
+  useEffect(() => {
+    const path = window.location.pathname;
+    setView(path === '/app' ? 'app' : 'landing');
+  }, []);
 
   // Handle browser back/forward navigation
   useEffect(() => {
@@ -90,6 +90,28 @@ function App() {
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);
   };
+
+  // Show loading state while determining initial view (prevents hydration mismatch)
+  if (view === null) {
+    return (
+      <div className="app" style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg-primary, #0a0a0f)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(139, 92, 246, 0.3)',
+          borderTopColor: '#8b5cf6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+      </div>
+    );
+  }
 
   // Show landing page
   if (view === 'landing') {
